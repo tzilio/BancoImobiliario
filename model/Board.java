@@ -5,26 +5,24 @@ import java.util.List;
 
 public class Board {
     public static final int BOARD_SIZE = 40;  // por exemplo, 40 casas no tabuleiro
-    private List<Space> spaces;
+    private List<BoardPosition> positions;
 
-    // Construtor
     public Board() {
-        spaces = new ArrayList<>(BOARD_SIZE);
+        positions = new ArrayList<>(BOARD_SIZE);
         initializeBoard();
     }
 
-    // Método para inicializar o tabuleiro com diferentes tipos de espaços
     private void initializeBoard() {
         for (int i = 0; i < BOARD_SIZE; i++) {
             if (i % 5 == 0) {
-                spaces.add(new Property("Property " + i, 200 + i * 10, 50 + i * 5));
+                positions.add(new Property("Property " + i, 200 + i * 10, 50 + i * 5, i)); 
             } else {
-                spaces.add(new GoSpace(i));
+                positions.add(new GoSpace(i)); 
             }
         }
     }
 
-    public Space getSpace(int position) {
-        return spaces.get(position);
+    public BoardPosition getSpace(int position) {
+        return positions.get(position);
     }
 }

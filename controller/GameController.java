@@ -4,6 +4,8 @@ import model.*;
 import view.GameView;
 
 import java.util.List;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class GameController {
     private List<Player> players;
@@ -18,6 +20,13 @@ public class GameController {
         this.dice = new Dice();
         this.view = view;
         this.currentPlayerIndex = 0;
+
+        view.getRollDiceButton().addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                nextTurn(); 
+            }
+        });
     }
 
     public void startGame() {
@@ -27,18 +36,20 @@ public class GameController {
 
     private void nextTurn() {
         Player currentPlayer = players.get(currentPlayerIndex);
-        view.displayPlayerTurn(currentPlayer);
-
+        
         int roll = dice.roll();
-        view.displayDiceRoll(dice.getDie1(), dice.getDie2());
+        view.displayDiceRoll(dice.getDice1(), dice.getDice2());
+        
         currentPlayer.move(roll);
-        Space currentSpace = board.getSpace(currentPlayer.getPosition());
-
+        BoardPosition currentSpace = board.getSpace(currentPlayer.getPosition());
         currentSpace.onLand(currentPlayer);
 
-        checkGameEnd();
+        view.displayMessage(currentPlayer.getName() + " rolou " + roll + " e se moveu para a posição " + currentPlayer.getPosition());
+
+        //checkGameEnd();
 
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
+        view.displayPlayerTurn(players.get(currentPlayerIndex));
     }
 
     //private void checkGameEnd() { ve se o jogo acabou, quem ganhou

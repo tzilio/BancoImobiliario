@@ -25,7 +25,7 @@ public class Dice {
         return dice1;
     }
 
-    public int getdice2() {
+    public int getDice2() {
         return dice2;
     }
 }
