@@ -1,5 +1,6 @@
 import javax.swing.SwingUtilities;
 import controller.GameController;
+import model.Board;
 import model.Player;
 import view.GameView;
 
@@ -13,11 +14,12 @@ public class Main {
             players.add(new Player("Jogador 1", 1500));
             players.add(new Player("Jogador 2", 1500));
 
-            GameView gameView = new GameView();
+            Board board = new Board();
+
+            GameView gameView = new GameView(board);
             gameView.setVisible(true);  
 
             GameController gameController = new GameController(players, gameView);
-
             gameController.startGame();
         });
     }
