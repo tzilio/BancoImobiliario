@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Board {
-    public static final int BOARD_SIZE = 40;  // por exemplo, 40 casas no tabuleiro
+    public static final int BOARD_SIZE = 25;  // por exemplo, 40 casas no tabuleiro
     private List<BoardPosition> positions;
 
     public Board() {

@@ -25,21 +25,35 @@ public class GameView extends JFrame {
         messageLabel = new JLabel("Bem-vindo ao Banco Imobiliário!");
         add(messageLabel, BorderLayout.NORTH);
 
-        diceRollLabel = new JLabel("Resultado dos Dados: ");
-        add(diceRollLabel, BorderLayout.CENTER);
 
         rollDiceButton = new JButton("Rolar Dados");
         JPanel bottomPanel = new JPanel();
         bottomPanel.add(rollDiceButton);
         add(bottomPanel, BorderLayout.SOUTH);
 
-        boardPanel = new JPanel(new GridLayout(4, 10)); 
-        for (int i = 0; i < board.BOARD_SIZE; i++) {
-            JButton spaceButton = new JButton("Espaço " + i);
-            spaceButton.setEnabled(false); 
-            boardPanel.add(spaceButton);
+        JPanel centerPanel = new JPanel(new BorderLayout());
+
+        diceRollLabel = new JLabel("Resultado dos dados: ");
+        centerPanel.add(diceRollLabel, BorderLayout.NORTH);
+
+        boardPanel = new JPanel(new GridLayout(5, 5));
+        int casas = 0;
+        int limit = (int)(Math.sqrt(board.BOARD_SIZE));
+        for (int i = 0; i < limit; i++) {
+            for (int j = 0; j < limit; j++) {
+                if (i == 0 || i == limit - 1 || j == 0 || j == limit - 1) {
+                    JButton spaceButton = new JButton("Espaço " + casas);
+                    spaceButton.setEnabled(false); 
+                    boardPanel.add(spaceButton);
+                    casas++;
+                } else {
+                    boardPanel.add(new JLabel());
+                }
+            }
         }
-        add(boardPanel, BorderLayout.CENTER);
+
+        centerPanel.add(boardPanel, BorderLayout.CENTER);
+        add(centerPanel, BorderLayout.CENTER);
     }
 
     public void displayMessage(String message) {
