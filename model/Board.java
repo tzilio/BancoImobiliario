@@ -6,7 +6,7 @@ import java.util.List;
 public class Board {
     public static final int BOARD_SIZE = 40; 
     private static final int JAIL_POSITION = 10;
-    private static final int GO_TO_JAIL_POSITION = 10;
+    private static final int GO_TO_JAIL_POSITION = 30;
     
     private List<BoardPosition> positions;
 

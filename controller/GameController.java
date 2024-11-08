@@ -14,12 +14,13 @@ public class GameController {
 
     public GameController(List<Player> players, GameView view) {
         this.players = players;
-        this.board = Board.getInstance(); // Usando o Singleton de Board
-        this.dice = Dice.getInstance();   // Usando o Singleton de Dice
+        this.board = Board.getInstance();
+        this.dice = Dice.getInstance();
         this.view = view;
         this.currentPlayerIndex = 0;
         initializePlayers();
         setupRollDiceAction();
+        setupBuyPropertyAction();
     }
 
     public void startGame() {
@@ -38,7 +39,12 @@ public class GameController {
         view.getRollDiceButton().addActionListener(e -> nextTurn());
     }
 
+    private void setupBuyPropertyAction() {
+        view.getBuyPropertyButton().addActionListener(e -> buyProperty());
+    }
+
     private void nextTurn() {
+        view.enableBuyPropertyButton(false);
         Player currentPlayer = players.get(currentPlayerIndex);
 
         if (currentPlayer.isInJail()) {
@@ -50,7 +56,8 @@ public class GameController {
         int roll = dice.roll();
         view.displayDiceRoll(dice.getDice1(), dice.getDice2());
         processPlayerMove(currentPlayer, roll);
-        handleSpaceEffect(currentPlayer, board.getSpace(currentPlayer.getPosition()));
+        BoardPosition currentSpace = board.getSpace(currentPlayer.getPosition());
+        handleSpaceEffect(currentPlayer, currentSpace);
         moveToNextPlayer();
     }
 
@@ -86,20 +93,28 @@ public class GameController {
 
     private void handleProperty(Property property, Player player) {
         if (property.getOwner() == null) {
-            attemptToBuyProperty(player, property);
+            view.displayMessage(player.getName() + " pode comprar " + property.getName() + " por " + property.getPrice());
+            view.enableBuyPropertyButton(true);
         } else if (!property.getOwner().equals(player)) {
             chargeRent(player, property);
         }
     }
 
-    private void attemptToBuyProperty(Player player, Property property) {
-        if (player.getBalance() >= property.getPrice()) {
-            player.updateBalance(-property.getPrice());
-            player.addProperty(property);
-            property.setOwner(player);
-            view.displayMessage(player.getName() + " comprou " + property.getName() + " por " + property.getPrice());
-        } else {
-            view.displayMessage(player.getName() + " não tem saldo suficiente para comprar " + property.getName());
+    private void buyProperty() {
+        Player currentPlayer = players.get(currentPlayerIndex);
+        BoardPosition currentPosition = board.getSpace(currentPlayer.getPosition());
+
+        if (currentPosition instanceof Property) {
+            Property property = (Property) currentPosition;
+            if (currentPlayer.getBalance() >= property.getPrice()) {
+                currentPlayer.updateBalance(-property.getPrice());
+                currentPlayer.addProperty(property);
+                property.setOwner(currentPlayer);
+                view.displayMessage(currentPlayer.getName() + " comprou " + property.getName() + " por " + property.getPrice());
+                view.enableBuyPropertyButton(false);
+            } else {
+                view.displayMessage(currentPlayer.getName() + " não tem saldo suficiente para comprar " + property.getName());
+            }
         }
     }
 
@@ -115,10 +130,10 @@ public class GameController {
     }
 
     private void sendPlayerToJail(Player player) {
-        Prison prison = Prison.getInstance(board.getJailPosition());
-        prison.sendToJail(player);
+        player.setInJail(true);
+        player.setPosition(board.getJailPosition());
         view.displayMessage(player.getName() + " foi enviado para a prisão!");
-        view.getBoardView().updatePlayerPosition(player, prison.getPosition());
+        view.getBoardView().updatePlayerPosition(player, player.getPosition());
     }
 
     private void moveToNextPlayer() {
