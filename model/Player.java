@@ -25,6 +25,10 @@ public class Player {
     public int getBalance() {
         return balance;
     }
+    
+    public void setPosition(int position) {
+        this.position = position;
+    }
 
     public void updateBalance(int amount) {
         this.balance += amount;

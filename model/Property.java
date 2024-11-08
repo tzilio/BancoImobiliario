@@ -41,8 +41,8 @@ public class Property extends BoardPosition {
     @Override
     public void onLand(Player player) {
         if (isOwned() && owner != player) {
-            player.updateBalance(-rent);  // Player pays rent to the owner
-            owner.updateBalance(rent);    // Owner receives the rent
+            player.updateBalance(-rent); 
+            owner.updateBalance(rent);   
             System.out.println(player.getName() + " pagou " + rent + " para " + owner.getName());
         } else if (!isOwned()) {
             System.out.println(player.getName() + " pode comprar " + name + " por " + price);

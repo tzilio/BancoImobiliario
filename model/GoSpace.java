@@ -1,10 +1,18 @@
 package model;
 
-public class GoSpace extends BoardPosition { //posicao de inicio do jogo
+public class GoSpace extends BoardPosition {
     private static final int START_REWARD = 200;  
+    private static GoSpace instance;  
 
-    public GoSpace(int position) {
+    private GoSpace(int position) {
         super(position);
+    }
+
+    public static GoSpace getInstance(int position) {
+        if (instance == null) {
+            instance = new GoSpace(position);
+        }
+        return instance;
     }
 
     @Override

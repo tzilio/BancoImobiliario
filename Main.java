@@ -14,7 +14,7 @@ public class Main {
             players.add(new Player("Jogador 1", 1500));
             players.add(new Player("Jogador 2", 1500));
 
-            Board board = new Board();
+            Board board = Board.getInstance();
 
             GameView gameView = new GameView(board);
             gameView.setVisible(true);  

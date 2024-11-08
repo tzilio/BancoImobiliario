@@ -7,8 +7,17 @@ public class Dice {
     private int dice1;
     private int dice2;
 
-    public Dice() {
+    private static Dice instance;
+
+    private Dice() {
         random = new Random();
+    }
+
+    public static Dice getInstance() {
+        if (instance == null) {
+            instance = new Dice();
+        }
+        return instance;
     }
 
     public int roll() {
