@@ -13,6 +13,8 @@ public class Main {
             List<Player> players = new ArrayList<>();
             players.add(new Player("Jogador 1", 1500));
             players.add(new Player("Jogador 2", 1500));
+            players.add(new Player("Jogador 3", 1500));
+            players.add(new Player("Jogador 4", 1500));
 
             Board board = Board.getInstance();
 
