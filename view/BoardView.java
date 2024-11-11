@@ -10,95 +10,103 @@ import model.Player;
 
 public class BoardView extends JPanel {
     private Board board;
-    private Map<Integer, JButton> spaceButtons;
+    private Map<Integer, SpaceView> spaceViews;
     private Map<Player, Integer> playerPositions;
+    private int boardSize;  // Número de espaços em cada lado do tabuleiro
 
-    public BoardView(Board board) {
+    public BoardView(Board board, int boardSize) {
         this.board = board;
-        this.spaceButtons = new HashMap<>();
+        this.boardSize = boardSize;
+        this.spaceViews = new HashMap<>();
         this.playerPositions = new HashMap<>();
-        setLayout(new BorderLayout());
 
-        // Top panel
-        add(createTopPanel(), BorderLayout.NORTH);
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.BOTH;
 
-        // Left and Right panels in a container to ensure correct layout
-        JPanel sidesPanel = new JPanel(new BorderLayout());
-        sidesPanel.add(createLeftPanel(), BorderLayout.WEST);
-        sidesPanel.add(createRightPanel(), BorderLayout.EAST);
-        add(sidesPanel, BorderLayout.CENTER);
-
-        // Bottom panel
-        add(createBottomPanel(), BorderLayout.SOUTH);
-
-        // Center panel (empty)
-        JPanel centerPanel = new JPanel();
-        centerPanel.setPreferredSize(new Dimension(200, 200));
-        centerPanel.setBackground(Color.LIGHT_GRAY);
-        sidesPanel.add(centerPanel, BorderLayout.CENTER);
+        addSpacesToGrid(gbc);
     }
 
-    private JPanel createTopPanel() {
-        JPanel topPanel = new JPanel(new GridLayout(1, 11));
-        for (int i = 0; i <= 10; i++) {
-            JButton spaceButton = createSpaceButton(i);
-            topPanel.add(spaceButton);
-            spaceButtons.put(i, spaceButton);
+    private void addSpacesToGrid(GridBagConstraints gbc) {
+
+        // Linha superior
+        for (int i = 0; i < boardSize; i++) {
+            gbc.gridx = i;
+            gbc.gridy = 0;
+            addSpaceToGrid(i, gbc);
         }
-        return topPanel;
-    }
 
-    private JPanel createRightPanel() {
-        JPanel rightPanel = new JPanel(new GridLayout(9, 1));
-        for (int i = 11; i <= 19; i++) {
-            JButton spaceButton = createSpaceButton(i);
-            rightPanel.add(spaceButton);
-            spaceButtons.put(i, spaceButton);
+        // Coluna direita
+        for (int i = 1; i < boardSize - 1; i++) {
+            gbc.gridx = boardSize - 1;
+            gbc.gridy = i;
+            addSpaceToGrid(boardSize + i - 1, gbc);
         }
-        return rightPanel;
-    }
 
-    private JPanel createBottomPanel() {
-        JPanel bottomPanel = new JPanel(new GridLayout(1, 11));
-        for (int i = 30; i >= 20; i--) {
-            JButton spaceButton = createSpaceButton(i);
-            bottomPanel.add(spaceButton);
-            spaceButtons.put(i, spaceButton);
+        // Linha inferior
+        for (int i = boardSize - 1; i >= 0; i--) {
+            gbc.gridx = i;
+            gbc.gridy = boardSize - 1;
+            addSpaceToGrid((boardSize * 2 - 2) + (boardSize - 1 - i), gbc);
         }
-        return bottomPanel;
-    }
 
-    private JPanel createLeftPanel() {
-        JPanel leftPanel = new JPanel(new GridLayout(9, 1));
-        for (int i = 39; i >= 31; i--) {
-            JButton spaceButton = createSpaceButton(i);
-            leftPanel.add(spaceButton);
-            spaceButtons.put(i, spaceButton);
+        // Coluna esquerda
+        for (int i = boardSize - 2; i > 0; i--) {
+            gbc.gridx = 0;
+            gbc.gridy = i;
+            addSpaceToGrid((boardSize * 3 - 3) + i, gbc);
         }
-        return leftPanel;
+
+        // Espaços centrais (vazio ou logotipo)
+        for (int x = 1; x < boardSize - 1; x++) {
+            for (int y = 1; y < boardSize - 1; y++) {
+                gbc.gridx = x;
+                gbc.gridy = y;
+                JPanel centerPanel = new JPanel();
+                centerPanel.setBackground(Color.WHITE);
+                add(centerPanel, gbc);
+            }
+        }
     }
 
-    private JButton createSpaceButton(int position) {
+    private void addSpaceToGrid(int position, GridBagConstraints gbc) {
         BoardPosition boardPosition = board.getSpace(position);
-        String label = boardPosition != null ? boardPosition.getClass().getSimpleName() : "Space";
-        JButton spaceButton = new JButton(label + " " + position);
-        spaceButton.setEnabled(false);
-        return spaceButton;
+        SpaceView spaceView = new SpaceView(boardPosition, position);
+        spaceViews.put(position, spaceView);
+
+        // Ajuste do tamanho dos espaços
+        if (isCornerPosition(position)) {
+            spaceView.setPreferredSize(new Dimension(80, 80));
+        } else {
+            if (isVerticalPosition(position)) {
+                spaceView.setPreferredSize(new Dimension(80, 60));
+            } else {
+                spaceView.setPreferredSize(new Dimension(60, 80));
+            }
+        }
+
+        add(spaceView, gbc);
+    }
+
+    private boolean isCornerPosition(int position) {
+        return position == 0 || position == boardSize - 1 || position == (boardSize * 2 - 2) || position == (boardSize * 3 - 3);
+    }
+
+    private boolean isVerticalPosition(int position) {
+        return (position >= boardSize && position < boardSize * 2 - 2) || (position >= boardSize * 3 - 3 && position < boardSize * 4 - 4);
     }
 
     public void updatePlayerPosition(Player player, int newPosition) {
+        // Remover token da posição anterior
         if (playerPositions.containsKey(player)) {
             int previousPosition = playerPositions.get(player);
-            JButton previousButton = spaceButtons.get(previousPosition);
-            BoardPosition previousSpace = board.getSpace(previousPosition);
-            String label = previousSpace != null ? previousSpace.getClass().getSimpleName() : "Space";
-            previousButton.setText(label + " " + previousPosition);
-            previousButton.setBackground(null);
+            SpaceView previousSpace = spaceViews.get(previousPosition);
+            previousSpace.removePlayerToken(player);
         }
 
+        // Adicionar token à nova posição
         playerPositions.put(player, newPosition);
-        JButton currentButton = spaceButtons.get(newPosition);
-        currentButton.setText("Player " + player.getName());
-        currentButton.setBackground(Color.YELLOW);
+        SpaceView currentSpace = spaceViews.get(newPosition);
+        currentSpace.addPlayerToken(player);
     }
 }

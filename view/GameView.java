@@ -38,7 +38,7 @@ public class GameView extends JFrame {
         bottomPanel.add(buyPropertyButton);
         add(bottomPanel, BorderLayout.SOUTH);
 
-        boardView = new BoardView(board);
+        boardView = new BoardView(board, 10);
         add(boardView, BorderLayout.CENTER);
     }
 
