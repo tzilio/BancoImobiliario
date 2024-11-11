@@ -70,7 +70,7 @@ public class SpaceView extends JPanel {
 
     public void addPlayerToken(Player player) {
         // Carregar o ícone do jogador
-        ImageIcon icon = loadImage("/home/tiago/paradigmas/BancoImobiliario/view/peao-de-xadrez(1).png");
+        ImageIcon icon = loadImage("view/peao-de-xadrez(1).png");
         if (icon != null) {
             // Redimensionar a imagem para caber no token
             Image img = icon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
