@@ -13,10 +13,15 @@ public class BoardView extends JPanel {
     private Map<Integer, SpaceView> spaceViews;
     private Map<Player, Integer> playerPositions;
     private int boardSize;  // Número de espaços em cada lado do tabuleiro
+    private int borderPositions; // Número total de posições na borda(posições que vão ser usadas durante o jogo).
 
     public BoardView(Board board, int boardSize) {
+        if (boardSize < 2) {
+            throw new IllegalArgumentException("boardSize deve ser pelo menos 2.");
+        }
         this.board = board;
         this.boardSize = boardSize;
+        this.borderPositions = (4 * boardSize) - 4; // Calcula dinamicamente
         this.spaceViews = new HashMap<>();
         this.playerPositions = new HashMap<>();
 
@@ -28,33 +33,34 @@ public class BoardView extends JPanel {
     }
 
     private void addSpacesToGrid(GridBagConstraints gbc) {
+        int position = 0; // Variável para acompanhar as posições no contorno
 
-        // Linha superior
+        // Linha superior (posições 0 a boardSize-1)
         for (int i = 0; i < boardSize; i++) {
             gbc.gridx = i;
             gbc.gridy = 0;
-            addSpaceToGrid(i, gbc);
+            addSpaceToGrid(position++, gbc);  // Posições 0 a boardSize-1
         }
 
-        // Coluna direita
+        // Coluna direita (posições boardSize a 2*boardSize-3)
         for (int i = 1; i < boardSize - 1; i++) {
             gbc.gridx = boardSize - 1;
             gbc.gridy = i;
-            addSpaceToGrid(boardSize + i - 1, gbc);
+            addSpaceToGrid(position++, gbc);  // Posições seguintes
         }
 
-        // Linha inferior
+        // Linha inferior (posições 2*boardSize-2 a 3*boardSize-3)
         for (int i = boardSize - 1; i >= 0; i--) {
             gbc.gridx = i;
             gbc.gridy = boardSize - 1;
-            addSpaceToGrid((boardSize * 2 - 2) + (boardSize - 1 - i), gbc);
+            addSpaceToGrid(position++, gbc);  // Posições na linha inferior
         }
 
-        // Coluna esquerda
+        // Coluna esquerda (posições 3*boardSize-3 a 4*boardSize-5)
         for (int i = boardSize - 2; i > 0; i--) {
             gbc.gridx = 0;
             gbc.gridy = i;
-            addSpaceToGrid((boardSize * 3 - 3) + i, gbc);
+            addSpaceToGrid(position++, gbc);  // Posições na coluna esquerda
         }
 
         // Espaços centrais (vazio ou logotipo)
@@ -65,6 +71,15 @@ public class BoardView extends JPanel {
                 JPanel centerPanel = new JPanel();
                 centerPanel.setBackground(Color.WHITE);
                 add(centerPanel, gbc);
+            }
+        }
+
+        // Verificação final para garantir que todas as posições foram adicionadas
+        for (int pos = 0; pos < borderPositions; pos++) {
+            if (!spaceViews.containsKey(pos)) {
+                System.err.println("Erro: Posição " + pos + " não foi adicionada ao spaceViews");
+            } else {
+                System.out.println("Posição " + pos + " adicionada corretamente.");
             }
         }
     }
@@ -89,24 +104,47 @@ public class BoardView extends JPanel {
     }
 
     private boolean isCornerPosition(int position) {
-        return position == 0 || position == boardSize - 1 || position == (boardSize * 2 - 2) || position == (boardSize * 3 - 3);
+        return position == 0 || 
+               position == (boardSize - 1) || 
+               position == (2 * boardSize - 2) || 
+               position == (3 * boardSize - 3);
     }
 
     private boolean isVerticalPosition(int position) {
-        return (position >= boardSize && position < boardSize * 2 - 2) || (position >= boardSize * 3 - 3 && position < boardSize * 4 - 4);
+        return (position >= boardSize && position < (2 * boardSize - 2)) ||
+               (position >= (3 * boardSize - 3) && position < (4 * boardSize - 4));
     }
 
     public void updatePlayerPosition(Player player, int newPosition) {
-        // Remover token da posição anterior
+        if (player == null) {
+            System.err.println("Erro: Jogador é nulo");
+            return;
+        }
+
+        // Ajustar a nova posição para garantir que está dentro do intervalo
+        newPosition = newPosition % borderPositions;
+
+        // Remover o token da posição anterior
         if (playerPositions.containsKey(player)) {
             int previousPosition = playerPositions.get(player);
             SpaceView previousSpace = spaceViews.get(previousPosition);
-            previousSpace.removePlayerToken(player);
+
+            if (previousSpace != null) {
+                previousSpace.removePlayerToken(player);
+            } else {
+                System.err.println("Erro: Posição anterior não encontrada - " + previousPosition);
+            }
         }
 
-        // Adicionar token à nova posição
+        // Atualizar a posição do jogador
         playerPositions.put(player, newPosition);
+
+        // Adicionar o token na nova posição
         SpaceView currentSpace = spaceViews.get(newPosition);
-        currentSpace.addPlayerToken(player);
+        if (currentSpace != null) {
+            currentSpace.addPlayerToken(player);
+        } else {
+            System.err.println("Erro: Nova posição não encontrada - " + newPosition);
+        }
     }
 }

@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Board {
-    public static final int BOARD_SIZE = 40; 
+    public static final int BOARD_SIZE = 49; 
     private static final int JAIL_POSITION = 10;
-    private static final int GO_TO_JAIL_POSITION = 30;
+    private static final int GO_TO_JAIL_POSITION = 23;
     
     private List<BoardPosition> positions;
 
