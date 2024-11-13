@@ -33,7 +33,7 @@ public class SpaceView extends JPanel {
         setBackground(getSpaceColor());
 
         // Adicionar nome do espaço
-        JLabel nameLabel = new JLabel("<html><center>" + "espaco" + "</center></html>");
+        JLabel nameLabel = new JLabel("<html><center>" + position + "</center></html>");
         nameLabel.setFont(new Font("Arial", Font.BOLD, 10));
         nameLabel.setHorizontalAlignment(SwingConstants.CENTER);
         add(nameLabel, BorderLayout.NORTH);
