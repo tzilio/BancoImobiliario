@@ -100,7 +100,9 @@ public class GameController {
     }
 
     private void applySpaceEffect(Player player, BoardPosition space) {
-        handleSpaceEffect(player, space);
+        if (space instanceof Property) {
+            handleProperty((Property) space, player);
+        }
     }
 
     private void handleJailTurn(Player player) {
@@ -123,12 +125,6 @@ public class GameController {
         view.displayMessage(player.getName() + " rolou " + roll + " e se moveu para a posição " + player.getPosition());
     }
 
-    private void handleSpaceEffect(Player player, BoardPosition space) {
-        if (space instanceof Property) {
-            handleProperty((Property) space, player);
-        }
-    }
-
     private void handleProperty(Property property, Player player) {
         if (property.getOwner() == null) {
             view.displayMessage(
@@ -136,6 +132,8 @@ public class GameController {
             view.enableBuyPropertyButton(true);
         } else if (!property.getOwner().equals(player)) {
             chargeRent(player, property);
+        } else {
+            view.displayMessage(player.getName() + " parou em sua própria propriedade " + property.getName());
         }
     }
 
@@ -161,10 +159,12 @@ public class GameController {
 
     private void chargeRent(Player player, Property property) {
         int rent = property.getRent();
+        Player owner = property.getOwner();
+        
         if (player.getBalance() >= rent) {
             player.updateBalance(-rent);
-            property.getOwner().updateBalance(rent);
-            view.displayMessage(player.getName() + " pagou " + rent + " de aluguel a " + property.getOwner().getName());
+            owner.updateBalance(rent);
+            view.displayMessage(player.getName() + " pagou " + rent + " de aluguel a " + owner.getName());
         } else {
             view.displayMessage(player.getName() + " não tem saldo suficiente para pagar o aluguel!");
         }
