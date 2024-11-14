@@ -26,7 +26,6 @@ public class PlayerInfoView extends JPanel implements Observer {
 
     @Override
     public void update() {
-        // Atualiza os dados sempre que o estado do Player mudar
         balanceLabel.setText("Saldo: " + player.getBalance());
         propertiesLabel.setText("Propriedades: " + player.getProperties().size());
     }
