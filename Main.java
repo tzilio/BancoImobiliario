@@ -18,7 +18,7 @@ public class Main {
 
             Board board = Board.getInstance();
 
-            GameView gameView = new GameView(board);
+            GameView gameView = new GameView(board, players);
             gameView.setVisible(true);  
 
             GameController gameController = new GameController(players, gameView);

@@ -27,7 +27,6 @@ public class Prison extends BoardPosition {
     public void sendToJail(Player player) {
         player.setInJail(true);
         player.setPosition(this.getPosition()); 
-        System.out.println(player.getName() + " foi enviado para a prisão.");
     }
 
     public void payBail(Player player) {

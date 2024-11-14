@@ -11,6 +11,7 @@ public class GameController {
     private Dice dice;
     private int currentPlayerIndex;
     private GameView view;
+    private Prison prison;
 
     public GameController(List<Player> players, GameView view) {
         this.players = players;
@@ -18,6 +19,7 @@ public class GameController {
         this.dice = Dice.getInstance();
         this.view = view;
         this.currentPlayerIndex = 0;
+        this.prison = Prison.getInstance(board.getJailPosition());
         initializePlayers();
         setupRollDiceAction();
         setupBuyPropertyAction();
@@ -56,6 +58,9 @@ public class GameController {
         int roll = dice.roll();
         view.displayDiceRoll(dice.getDice1(), dice.getDice2());
         processPlayerMove(currentPlayer, roll);
+        if (currentPlayer.getPosition() == board.getGoToJailPosition()) {
+            this.sendPlayerToJail(currentPlayer);
+        }
         BoardPosition currentSpace = board.getSpace(currentPlayer.getPosition());
         handleSpaceEffect(currentPlayer, currentSpace);
         moveToNextPlayer();
@@ -84,11 +89,7 @@ public class GameController {
     private void handleSpaceEffect(Player player, BoardPosition space) {
         if (space instanceof Property) {
             handleProperty((Property) space, player);
-        } else if (space instanceof GoToJailSpace) {
-            sendPlayerToJail(player);
-        } else {
-            space.onLand(player);
-        }
+        } 
     }
 
     private void handleProperty(Property property, Player player) {
@@ -130,8 +131,7 @@ public class GameController {
     }
 
     private void sendPlayerToJail(Player player) {
-        player.setInJail(true);
-        player.setPosition(board.getJailPosition());
+        prison.sendToJail(player);
         view.displayMessage(player.getName() + " foi enviado para a prisão!");
         view.getBoardView().updatePlayerPosition(player, player.getPosition());
     }
