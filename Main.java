@@ -1,28 +1,11 @@
 import javax.swing.SwingUtilities;
-import controller.GameController;
-import model.Board;
-import model.Player;
-import view.GameView;
-
-import java.util.ArrayList;
-import java.util.List;
+import view.MenuView;
 
 public class Main {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            List<Player> players = new ArrayList<>();
-            players.add(new Player("Jogador 1", 1500));
-            players.add(new Player("Jogador 2", 1500));
-            players.add(new Player("Jogador 3", 1500));
-            players.add(new Player("Jogador 4", 1500));
-
-            Board board = Board.getInstance();
-
-            GameView gameView = new GameView(board, players);
-            gameView.setVisible(true);  
-
-            GameController gameController = new GameController(players, gameView);
-            gameController.startGame();
+            MenuView menuView = new MenuView();
+            menuView.setVisible(true);
         });
     }
 }

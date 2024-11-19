@@ -9,17 +9,25 @@ public class Player {
     private int position;
     private List<Property> properties;
     private boolean inJail;
+    private String color; // Nova propriedade para a cor do peão
     
     // Lista de observadores
     private List<Observer> observers;
 
-    public Player(String name, int initialBalance) {
+    // Construtor principal
+    public Player(String name, int initialBalance, String color) {
         this.name = name;
         this.balance = initialBalance;
         this.position = 0;
         this.properties = new ArrayList<>();
         this.inJail = false;
-        this.observers = new ArrayList<>(); // Inicializa a lista de observadores
+        this.color = color; // Inicializa a cor do peão
+        this.observers = new ArrayList<>();
+    }
+
+    // Construtor simplificado para compatibilidade com instâncias antigas
+    public Player(String name, int initialBalance) {
+        this(name, initialBalance, "Default");
     }
 
     // Métodos para gerenciar observadores
@@ -45,15 +53,15 @@ public class Player {
     public int getBalance() {
         return balance;
     }
-    
+
     public void setPosition(int position) {
         this.position = position;
-        notifyObservers();  // Notifica os observadores ao atualizar a posição
+        notifyObservers(); // Notifica os observadores ao atualizar a posição
     }
 
     public void updateBalance(int amount) {
         this.balance += amount;
-        notifyObservers();  // Notifica os observadores ao atualizar o saldo
+        notifyObservers(); // Notifica os observadores ao atualizar o saldo
     }
 
     public int getPosition() {
@@ -62,7 +70,7 @@ public class Player {
 
     public void move(int steps) {
         this.position = (position + steps) % Board.BOARD_SIZE;
-        notifyObservers();  // Notifica os observadores ao mover o jogador
+        notifyObservers(); // Notifica os observadores ao mover o jogador
     }
 
     public List<Property> getProperties() {
@@ -71,7 +79,7 @@ public class Player {
 
     public void addProperty(Property property) {
         properties.add(property);
-        notifyObservers();  // Notifica os observadores ao adicionar uma propriedade
+        notifyObservers(); // Notifica os observadores ao adicionar uma propriedade
     }
 
     public boolean isInJail() {
@@ -80,6 +88,15 @@ public class Player {
 
     public void setInJail(boolean inJail) {
         this.inJail = inJail;
-        notifyObservers();  // Notifica os observadores ao atualizar o estado de prisão
+        notifyObservers(); // Notifica os observadores ao atualizar o estado de prisão
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+        notifyObservers(); // Notifica os observadores ao alterar a cor
     }
 }
