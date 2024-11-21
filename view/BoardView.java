@@ -7,13 +7,18 @@ import java.util.Map;
 import model.Board;
 import model.BoardPosition;
 import model.Player;
+import model.PlayerColor;
 
 public class BoardView extends JPanel {
     private Board board;
     private Map<Integer, SpaceView> spaceViews;
     private Map<Player, Integer> playerPositions;
-    private int boardSize;  // Número de espaços em cada lado do tabuleiro
-    private int borderPositions; // Número total de posições na borda(posições que vão ser usadas durante o jogo).
+    private int boardSize;         // Número de espaços em cada lado do tabuleiro
+    private int totalPositions;    // Número total de posições na borda
+
+    // Cores temáticas
+    private final Color boardBackgroundColor = new Color(255, 255, 255); // Verde escuro
+    private final Color cellBorderColor = Color.BLACK;
 
     public BoardView(Board board, int boardSize) {
         if (boardSize < 2) {
@@ -21,100 +26,93 @@ public class BoardView extends JPanel {
         }
         this.board = board;
         this.boardSize = boardSize;
-        this.borderPositions = (4 * boardSize) - 4; // Calcula dinamicamente
+        this.totalPositions = (4 * boardSize) - 4; // Calcula dinamicamente
         this.spaceViews = new HashMap<>();
         this.playerPositions = new HashMap<>();
 
-        setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.BOTH;
-
-        addSpacesToGrid(gbc);
+        setLayout(new GridLayout(boardSize, boardSize));
+        setBackground(boardBackgroundColor);
+        initializeBoard();
     }
 
-    private void addSpacesToGrid(GridBagConstraints gbc) {
+    private void initializeBoard() {
         int position = 0; // Variável para acompanhar as posições no contorno
 
-        // Linha superior (posições 0 a boardSize-1)
-        for (int i = 0; i < boardSize; i++) {
-            gbc.gridx = i;
-            gbc.gridy = 0;
-            addSpaceToGrid(position++, gbc);  // Posições 0 a boardSize-1
-        }
-
-        // Coluna direita (posições boardSize a 2*boardSize-3)
-        for (int i = 1; i < boardSize - 1; i++) {
-            gbc.gridx = boardSize - 1;
-            gbc.gridy = i;
-            addSpaceToGrid(position++, gbc);  // Posições seguintes
-        }
-
-        // Linha inferior (posições 2*boardSize-2 a 3*boardSize-3)
-        for (int i = boardSize - 1; i >= 0; i--) {
-            gbc.gridx = i;
-            gbc.gridy = boardSize - 1;
-            addSpaceToGrid(position++, gbc);  // Posições na linha inferior
-        }
-
-        // Coluna esquerda (posições 3*boardSize-3 a 4*boardSize-5)
-        for (int i = boardSize - 2; i > 0; i--) {
-            gbc.gridx = 0;
-            gbc.gridy = i;
-            addSpaceToGrid(position++, gbc);  // Posições na coluna esquerda
-        }
-
-        // Espaços centrais (vazio ou logotipo)
-        for (int x = 1; x < boardSize - 1; x++) {
-            for (int y = 1; y < boardSize - 1; y++) {
-                gbc.gridx = x;
-                gbc.gridy = y;
-                JPanel centerPanel = new JPanel();
-                centerPanel.setBackground(Color.WHITE);
-                add(centerPanel, gbc);
+        for (int row = 0; row < boardSize; row++) {
+            for (int col = 0; col < boardSize; col++) {
+                // Determinar se a célula está na borda
+                if (row == 0 || row == boardSize - 1 || col == 0 || col == boardSize - 1) {
+                    addSpaceToGrid(position++, row, col);
+                } else {
+                    // Espaços centrais vazios ou com logotipo
+                    JPanel centerPanel = createCenterPanel();
+                    add(centerPanel);
+                }
             }
         }
 
         // Verificação final para garantir que todas as posições foram adicionadas
-        for (int pos = 0; pos < borderPositions; pos++) {
+        for (int pos = 0; pos < totalPositions; pos++) {
             if (!spaceViews.containsKey(pos)) {
                 System.err.println("Erro: Posição " + pos + " não foi adicionada ao spaceViews");
-            } else {
-                System.out.println("Posição " + pos + " adicionada corretamente.");
             }
         }
     }
 
-    private void addSpaceToGrid(int position, GridBagConstraints gbc) {
+    private JPanel createCenterPanel() {
+        JPanel panel = new JPanel();
+        panel.setBackground(boardBackgroundColor);
+        // Aqui você pode adicionar um logotipo ou deixar vazio
+        // Exemplo: adicionar um logotipo central
+        // JLabel logoLabel = new JLabel(new ImageIcon("path/to/logo.png"));
+        // panel.add(logoLabel);
+        return panel;
+    }
+
+    private void addSpaceToGrid(int position, int row, int col) {
         BoardPosition boardPosition = board.getSpace(position);
         SpaceView spaceView = new SpaceView(boardPosition, position);
         spaceViews.put(position, spaceView);
 
-        // Ajuste do tamanho dos espaços
-        if (isCornerPosition(position)) {
-            spaceView.setPreferredSize(new Dimension(80, 80));
-        } else {
-            if (isVerticalPosition(position)) {
-                spaceView.setPreferredSize(new Dimension(80, 60));
-            } else {
-                spaceView.setPreferredSize(new Dimension(60, 80));
-            }
+        // Estilização da célula
+        spaceView.setBorder(BorderFactory.createLineBorder(cellBorderColor));
+        spaceView.setBackground(getBackgroundColorForSpace(boardPosition));
+        spaceView.setLayout(new BorderLayout());
+
+        add(spaceView);
+    }
+
+    private Color getBackgroundColorForSpace(BoardPosition boardPosition) {
+        // Defina cores específicas para tipos de espaços, se necessário
+        // Exemplo: espaço de início, propriedades, impostos, etc.
+        switch (boardPosition.getType()) {
+            case START:
+                return new Color(0, 150, 0); // Verde mais claro
+            case PROPERTY:
+                return new Color(200, 200, 200); // Cinza claro
+            case TAX:
+                return new Color(255, 0, 0); // Vermelho
+            case CHANCE:
+                return new Color(255, 215, 0); // Ouro
+            case COMMUNITY_CHEST:
+                return new Color(0, 191, 255); // Azul
+            case JAIL:
+                return new Color(128, 128, 128); // Cinza
+            case FREE_PARKING:
+                return new Color(34, 139, 34); // Verde floresta
+            case GO_TO_JAIL:
+                return new Color(128, 0, 0); // Marrom escuro
+            default:
+                return new Color(169, 169, 169); // Cinza
         }
-
-        add(spaceView, gbc);
     }
 
-    private boolean isCornerPosition(int position) {
-        return position == 0 || 
-               position == (boardSize - 1) || 
-               position == (2 * boardSize - 2) || 
-               position == (3 * boardSize - 3);
-    }
-
-    private boolean isVerticalPosition(int position) {
-        return (position >= boardSize && position < (2 * boardSize - 2)) ||
-               (position >= (3 * boardSize - 3) && position < (4 * boardSize - 4));
-    }
-
+    /**
+     * Atualiza a posição de um jogador no tabuleiro.
+     *
+     * @param player      O jogador a ser movido.
+     * @param newPosition A nova posição do jogador.
+     */
     public void updatePlayerPosition(Player player, int newPosition) {
         if (player == null) {
             System.err.println("Erro: Jogador é nulo");
@@ -122,13 +120,12 @@ public class BoardView extends JPanel {
         }
 
         // Ajustar a nova posição para garantir que está dentro do intervalo
-        newPosition = newPosition % borderPositions;
+        newPosition = newPosition % totalPositions;
 
         // Remover o token da posição anterior
         if (playerPositions.containsKey(player)) {
             int previousPosition = playerPositions.get(player);
             SpaceView previousSpace = spaceViews.get(previousPosition);
-
             if (previousSpace != null) {
                 previousSpace.removePlayerToken(player);
             } else {
@@ -146,5 +143,26 @@ public class BoardView extends JPanel {
         } else {
             System.err.println("Erro: Nova posição não encontrada - " + newPosition);
         }
+
+        // Atualizar a interface
+        revalidate();
+        repaint();
+    }
+
+    /**
+     * Reseta todas as posições dos jogadores no tabuleiro.
+     */
+    public void resetPlayerPositions() {
+        for (Map.Entry<Player, Integer> entry : playerPositions.entrySet()) {
+            Player player = entry.getKey();
+            int position = entry.getValue();
+            SpaceView spaceView = spaceViews.get(position);
+            if (spaceView != null) {
+                spaceView.removePlayerToken(player);
+            }
+        }
+        playerPositions.clear();
+        revalidate();
+        repaint();
     }
 }

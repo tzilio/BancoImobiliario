@@ -4,19 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Board {
-    public static final int BOARD_SIZE = 40; 
-    private static final int JAIL_POSITION = 10;
-    private static final int GO_TO_JAIL_POSITION = 30;
-    
+    private static Board instance = null;
     private List<BoardPosition> positions;
 
-    private static Board instance;
+    public static final int TOTAL_POSITIONS = 40; // Total de posições no tabuleiro
+    public static final int JAIL_POSITION = 10;
+    public static final int GO_TO_JAIL_POSITION = 30;
 
+    // Construtor privado para implementar o padrão Singleton
     private Board() {
-        positions = new ArrayList<>(BOARD_SIZE);
-        initializeBoard();
+        positions = new ArrayList<>();
+        initializePositions();
     }
 
+    // Método para obter a única instância de Board
     public static Board getInstance() {
         if (instance == null) {
             instance = new Board();
@@ -24,25 +25,45 @@ public class Board {
         return instance;
     }
 
-    private void initializeBoard() {
-        positions.add(GoSpace.getInstance(0)); 
-        for (int i = 1; i < BOARD_SIZE; i++) {
-            if (i == getJailPosition()) {
-                positions.add(Prison.getInstance(i));
-            } else if (i == GO_TO_JAIL_POSITION) {
-                positions.add(new GoToJailSpace(i));
-            } else {
-                positions.add(new Property("Property " + i, 200 + i * 10, 50 + i * 5, i)); 
-            } 
+    // Inicializa todas as posições no tabuleiro
+    private void initializePositions() {
+        for (int i = 0; i < TOTAL_POSITIONS; i++) {
+            positions.add(createPosition(i));
         }
     }
 
-    public BoardPosition getSpace(int position) {
-        if (position >= BOARD_SIZE || position < 0) {
-            System.out.println("estorvo");
-            return null;
+    // Cria uma posição com base no índice
+    private BoardPosition createPosition(int index) {
+        // Dependendo do índice, criar diferentes tipos de posições
+        // Por exemplo: Início, Propriedade, Imposto, Sorte/Reves, Prisão, etc.
+        switch (index) {
+            case 0:
+                return new BoardPosition(index, "Início", BoardPosition.PositionType.START);
+            case JAIL_POSITION:
+                return new BoardPosition(index, "Prisão", BoardPosition.PositionType.JAIL);
+            case 20:
+                return new BoardPosition(index, "Estacionamento Gratuito", BoardPosition.PositionType.FREE_PARKING);
+            case GO_TO_JAIL_POSITION:
+                return new BoardPosition(index, "Vá para a Prisão", BoardPosition.PositionType.GO_TO_JAIL);
+            // Adicione outros casos para posições especiais
+            default:
+                // Exemplo de propriedade com custo variável
+                int cost = 100 + (index * 10); // Exemplo de cálculo de custo
+                return new Property(index, "Propriedade " + (index + 1), cost);
         }
-        return positions.get(position);
+    }
+
+    // Retorna o total de posições no tabuleiro
+    public int getTotalPositions() {
+        return TOTAL_POSITIONS;
+    }
+
+    // Obtém uma posição específica pelo índice
+    public BoardPosition getSpace(int index) {
+        if (index >= 0 && index < TOTAL_POSITIONS) {
+            return positions.get(index);
+        }
+        throw new IndexOutOfBoundsException("Índice de posição inválido: " + index);
     }
 
     public int getJailPosition() {

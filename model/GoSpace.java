@@ -5,7 +5,7 @@ public class GoSpace extends BoardPosition {
     private static GoSpace instance;  
 
     private GoSpace(int position) {
-        super(position);
+        super(position, "Ponto de Partida", PositionType.START); // Chama o construtor da classe base    
     }
 
     public static GoSpace getInstance(int position) {

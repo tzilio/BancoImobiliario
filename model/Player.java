@@ -6,46 +6,23 @@ import java.util.List;
 public class Player {
     private String name;
     private int balance;
+    private PlayerColor color;
     private int position;
-    private List<Property> properties;
     private boolean inJail;
-    private String color; // Nova propriedade para a cor do peão
-    
-    // Lista de observadores
+    private List<Property> properties;
     private List<Observer> observers;
 
-    // Construtor principal
-    public Player(String name, int initialBalance, String color) {
+    public Player(String name, int balance, PlayerColor color) {
         this.name = name;
-        this.balance = initialBalance;
-        this.position = 0;
-        this.properties = new ArrayList<>();
+        this.balance = balance;
+        this.color = color;
+        this.position = 0; // Posição inicial
         this.inJail = false;
-        this.color = color; // Inicializa a cor do peão
+        this.properties = new ArrayList<>();
         this.observers = new ArrayList<>();
     }
 
-    // Construtor simplificado para compatibilidade com instâncias antigas
-    public Player(String name, int initialBalance) {
-        this(name, initialBalance, "Default");
-    }
-
-    // Métodos para gerenciar observadores
-    public void addObserver(Observer observer) {
-        observers.add(observer);
-    }
-
-    public void removeObserver(Observer observer) {
-        observers.remove(observer);
-    }
-
-    private void notifyObservers() {
-        for (Observer observer : observers) {
-            observer.update();
-        }
-    }
-
-    // Getters e setters
+// Getters e setters
     public String getName() {
         return name;
     }
@@ -59,18 +36,8 @@ public class Player {
         notifyObservers(); // Notifica os observadores ao atualizar a posição
     }
 
-    public void updateBalance(int amount) {
-        this.balance += amount;
-        notifyObservers(); // Notifica os observadores ao atualizar o saldo
-    }
-
     public int getPosition() {
         return position;
-    }
-
-    public void move(int steps) {
-        this.position = (position + steps) % Board.BOARD_SIZE;
-        notifyObservers(); // Notifica os observadores ao mover o jogador
     }
 
     public List<Property> getProperties() {
@@ -91,12 +58,74 @@ public class Player {
         notifyObservers(); // Notifica os observadores ao atualizar o estado de prisão
     }
 
-    public String getColor() {
+    public PlayerColor getColor() {
         return color;
     }
 
-    public void setColor(String color) {
+    public void setColor(PlayerColor color) {
         this.color = color;
         notifyObservers(); // Notifica os observadores ao alterar a cor
     }
+
+
+
+    public void addProperty(BoardPosition position) {
+        if (position instanceof Property) { // Verifica se a posição é uma propriedade
+            Property property = (Property) position;
+            properties.add(property); // Adiciona à lista de propriedades do jogador
+            System.out.println("Propriedade " + property.getName() + " foi adicionada ao jogador.");
+            notifyObservers(); // Notifica observadores sobre a mudança no estado do jogador
+        } else {
+            throw new IllegalArgumentException("A posição fornecida não é uma propriedade.");
+        }
+    }
+    
+
+    /**
+     * Move o jogador no tabuleiro.
+     *
+     * @param steps Número de passos a mover.
+     */
+    public void move(int steps) {
+        Board board = Board.getInstance();
+        position = (position + steps) % board.getTotalPositions();
+        BoardPosition currentPosition = board.getSpace(position);
+        currentPosition.onLand(this);
+        notifyObservers();
+    }
+
+    /**
+     * Rola os dados para o jogador.
+     *
+     * @return Soma dos dois dados.
+     */
+    public int rollDice() {
+        int die1 = (int) (Math.random() * 6) + 1;
+        int die2 = (int) (Math.random() * 6) + 1;
+        int total = die1 + die2;
+        notifyObservers();
+        return total;
+    }
+
+    public void updateBalance(int amount) {
+        balance += amount;
+        notifyObservers();
+    }
+
+    // Implementação do padrão Observer
+    public void addObserver(Observer observer) {
+        observers.add(observer);
+    }
+
+    public void removeObserver(Observer observer) {
+        observers.remove(observer);
+    }
+
+    private void notifyObservers() {
+        for (Observer observer : observers) {
+            observer.update();
+        }
+    }
+
+
 }

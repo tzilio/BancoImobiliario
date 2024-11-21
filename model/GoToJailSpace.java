@@ -2,8 +2,8 @@ package model;
 
 public class GoToJailSpace extends BoardPosition {
 
-    public GoToJailSpace(int position) {
-        super(position);
+    public GoToJailSpace(int index) {
+        super(index, "Go to Jail", PositionType.GO_TO_JAIL);
     }
 
     @Override

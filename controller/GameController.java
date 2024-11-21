@@ -1,187 +1,110 @@
 package controller;
 
-import model.*;
+import model.Board;
+import model.BoardPosition;
+import model.Player;
+import model.Property;
+import model.Observer;
 import view.GameView;
 
+import javax.swing.*;
 import java.util.List;
 
-public class GameController {
+public class GameController implements Observer {
     private List<Player> players;
+    private GameView gameView;
+    private int currentPlayerIndex = 0;
     private Board board;
-    private Dice dice;
-    private int currentPlayerIndex;
-    private GameView view;
-    private Prison prison;
 
-    public GameController(List<Player> players, GameView view) {
+    public GameController(List<Player> players, GameView gameView) {
         this.players = players;
+        this.gameView = gameView;
         this.board = Board.getInstance();
-        this.dice = Dice.getInstance();
-        this.view = view;
-        this.currentPlayerIndex = 0;
-        this.prison = Prison.getInstance(board.getJailPosition());
-        initializePlayers();
-        setupRollDiceAction();
-        setupBuyPropertyAction();
+
+        // Registrar o GameController como observador de cada jogador
+        for (Player player : players) {
+            player.addObserver(this);
+        }
+
+        // Configurar ações dos botões
+        gameView.getRollDiceButton().addActionListener(e -> rollDice());
+        gameView.getBuyPropertyButton().addActionListener(e -> buyProperty());
     }
 
     public void startGame() {
-        view.displayMessage("Jogo iniciado!");
-        displayCurrentPlayerTurn();
-    }
-
-    private void initializePlayers() {
+        // Posicionar todos os jogadores na posição inicial
         for (Player player : players) {
-            player.setPosition(0);
-            view.getBoardView().updatePlayerPosition(player, 0);
+            gameView.getBoardView().updatePlayerPosition(player, player.getPosition());
         }
+
+        // Atualizar a interface para o jogador atual
+        updatePlayerTurn();
     }
 
-    private void setupRollDiceAction() {
-        view.getRollDiceButton().addActionListener(e -> nextTurn());
-    }
-
-    private void setupBuyPropertyAction() {
-        view.getBuyPropertyButton().addActionListener(e -> buyProperty());
-    }
-
-    private void nextTurn() {
-        view.enableBuyPropertyButton(false);
+    @Override
+    public void update() {
+        // Atualizar a interface quando um jogador muda de estado
         Player currentPlayer = players.get(currentPlayerIndex);
-
-        if (isPlayerInJail(currentPlayer)) {
-            return;
-        }
-
-        int roll = rollDiceAndDisplay();
-        
-        movePlayer(currentPlayer, roll);
-        
-        if (isPlayerSentToJail(currentPlayer)) {
-            movePlayer(currentPlayer, board.getJailPosition());
-            return;
-        }
-        
-        BoardPosition currentSpace = getPlayerCurrentSpace(currentPlayer);
-        applySpaceEffect(currentPlayer, currentSpace);
-        moveToNextPlayer();
+        gameView.getBoardView().updatePlayerPosition(currentPlayer, currentPlayer.getPosition());
+        gameView.updatePlayerInfo(players);
     }
 
-    private boolean isPlayerInJail(Player player) {
-        if (player.isInJail()) {
-            handleJailTurn(player);
-            moveToNextPlayer();
-            return true;
-        }
-        return false;
-    }
+    public void rollDice() {
+        Player currentPlayer = players.get(currentPlayerIndex);
+        int diceTotal = currentPlayer.rollDice();
 
-    private int rollDiceAndDisplay() {
-        int roll = dice.roll();
-        view.displayDiceRoll(dice.getDice1(), dice.getDice2());
-        return roll;
-    }
+        // Mover o jogador
+        currentPlayer.move(diceTotal);
 
-    private void movePlayer(Player player, int roll) {
-        processPlayerMove(player, roll);
-    }
+        // Atualizar a posição no tabuleiro
+        gameView.getBoardView().updatePlayerPosition(currentPlayer, currentPlayer.getPosition());
 
-    private boolean isPlayerSentToJail(Player player) {
-        if (player.getPosition() == board.getGoToJailPosition()) {
-            sendPlayerToJail(player);
-            moveToNextPlayer();
-            return true;
-        }
-        return false;
-    }
-
-    private BoardPosition getPlayerCurrentSpace(Player player) {
-        return board.getSpace(player.getPosition());
-    }
-
-    private void applySpaceEffect(Player player, BoardPosition space) {
-        if (space instanceof Property) {
-            handleProperty((Property) space, player);
-        }
-    }
-
-    private void handleJailTurn(Player player) {
-        view.displayMessage(player.getName() + " está na prisão.");
-        int roll = dice.roll();
-        view.displayDiceRoll(dice.getDice1(), dice.getDice2());
-
-        if (dice.isDouble()) {
-            player.setInJail(false);
-            view.displayMessage(player.getName() + " tirou um número duplo e saiu da prisão!");
-            nextTurn();
+        // Ativar o botão de comprar propriedade se aplicável
+        BoardPosition currentPosition = board.getSpace(currentPlayer.getPosition());
+        if (currentPosition.getType() == BoardPosition.PositionType.PROPERTY) {
+            Property property = (Property) currentPosition;
+            if (property.getOwner() == null) {
+                gameView.enableBuyPropertyButton(true);
+            } else {
+                gameView.enableBuyPropertyButton(false);
+            }
         } else {
-            view.displayMessage(player.getName() + " não conseguiu sair da prisão.");
+            gameView.enableBuyPropertyButton(false);
         }
     }
 
-    private void processPlayerMove(Player player, int roll) {
-        player.move(roll);
-        view.getBoardView().updatePlayerPosition(player, player.getPosition());
-        view.displayMessage(player.getName() + " rolou " + roll + " e se moveu para a posição " + player.getPosition());
-    }
-
-    private void handleProperty(Property property, Player player) {
-        if (property.getOwner() == null) {
-            view.displayMessage(
-                    player.getName() + " pode comprar " + property.getName() + " por " + property.getPrice());
-            view.enableBuyPropertyButton(true);
-        } else if (!property.getOwner().equals(player)) {
-            chargeRent(player, property);
-        } else {
-            view.displayMessage(player.getName() + " parou em sua própria propriedade " + property.getName());
-        }
-    }
-
-    private void buyProperty() {
+    public void buyProperty() {
         Player currentPlayer = players.get(currentPlayerIndex);
         BoardPosition currentPosition = board.getSpace(currentPlayer.getPosition());
 
-        if (currentPosition instanceof Property) {
+        if (currentPosition.getType() == BoardPosition.PositionType.PROPERTY) {
             Property property = (Property) currentPosition;
-            if (currentPlayer.getBalance() >= property.getPrice()) {
-                currentPlayer.updateBalance(-property.getPrice());
-                currentPlayer.addProperty(property);
-                property.setOwner(currentPlayer);
-                view.displayMessage(
-                        currentPlayer.getName() + " comprou " + property.getName() + " por " + property.getPrice());
-                view.enableBuyPropertyButton(false);
+            if (property.getOwner() == null) {
+                int propertyCost = property.getPrice();
+                if (currentPlayer.getBalance() >= propertyCost) {
+                    currentPlayer.updateBalance(-propertyCost);
+                    property.setOwner(currentPlayer);
+                    currentPlayer.addProperty(property);
+                    JOptionPane.showMessageDialog(gameView, currentPlayer.getName() + " comprou " + property.getName() + " por R$" + propertyCost);
+                } else {
+                    JOptionPane.showMessageDialog(gameView, currentPlayer.getName() + " não tem saldo suficiente para comprar esta propriedade.");
+                }
             } else {
-                view.displayMessage(
-                        currentPlayer.getName() + " não tem saldo suficiente para comprar " + property.getName());
+                JOptionPane.showMessageDialog(gameView, property.getName() + " já está comprada por " + property.getOwner().getName());
             }
         }
+
+        // Desativar o botão após a compra
+        gameView.enableBuyPropertyButton(false);
     }
 
-    private void chargeRent(Player player, Property property) {
-        int rent = property.getRent();
-        Player owner = property.getOwner();
-        
-        if (player.getBalance() >= rent) {
-            player.updateBalance(-rent);
-            owner.updateBalance(rent);
-            view.displayMessage(player.getName() + " pagou " + rent + " de aluguel a " + owner.getName());
-        } else {
-            view.displayMessage(player.getName() + " não tem saldo suficiente para pagar o aluguel!");
-        }
+    private void updatePlayerTurn() {
+        Player currentPlayer = players.get(currentPlayerIndex);
+        gameView.displayPlayerTurn(currentPlayer);
     }
 
-    private void sendPlayerToJail(Player player) {
-        prison.sendToJail(player);
-        view.displayMessage(player.getName() + " foi enviado para a prisão!");
-        view.getBoardView().updatePlayerPosition(player, player.getPosition());
-    }
-
-    private void moveToNextPlayer() {
+    public void endTurn() {
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
-        displayCurrentPlayerTurn();
-    }
-
-    private void displayCurrentPlayerTurn() {
-        view.displayPlayerTurn(players.get(currentPlayerIndex));
+        updatePlayerTurn();
     }
 }

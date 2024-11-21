@@ -6,12 +6,11 @@ public class Property extends BoardPosition {
     private int rent;
     private Player owner;
 
-    public Property(String name, int price, int rent, int position) {
-        super(position);
-        this.name = name;
+    public Property(int index, String name, int cost) {
+        super(index, name, PositionType.PROPERTY);
         this.price = price;
         this.rent = rent;
-        this.owner = null; 
+        this.owner = null; // Inicialmente, sem dono
     }
 
     public String getName() {
@@ -49,5 +48,11 @@ public class Property extends BoardPosition {
         } else {
             System.out.println(player.getName() + " já é o proprietário de " + name);
         }
+    }
+
+    private int calculateRent() {
+        // Implementar lógica para calcular o aluguel com base em diferentes fatores
+        // Por simplicidade, retornaremos um valor fixo
+        return price / 10;
     }
 }

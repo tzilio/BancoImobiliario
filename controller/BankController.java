@@ -1,5 +1,7 @@
 package controller;
 
+import java.util.Properties;
+
 import model.Player;
 import model.Property;
 

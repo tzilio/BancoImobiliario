@@ -5,7 +5,7 @@ public class Prison extends BoardPosition {
     private static Prison instance;  
 
     private Prison(int position) {
-        super(position);
+        super(position, "Prisão", PositionType.JAIL);
     }
 
     public static Prison getInstance(int position) {
@@ -17,16 +17,16 @@ public class Prison extends BoardPosition {
 
     @Override
     public void onLand(Player player) {
-        if (player.isInJail()) {
-            System.out.println(player.getName() + " está preso.");
-        } else {
-            System.out.println(player.getName() + " está apenas visitando a prisão.");
-        }
+        int jailPosition = Board.getInstance().getJailPosition();
+        Prison prison = Prison.getInstance(jailPosition);
+        prison.sendToJail(player);
     }
+    
 
     public void sendToJail(Player player) {
         player.setInJail(true);
-        player.setPosition(this.getPosition()); 
+        player.setPosition(this.getIndex());
+        System.out.println(player.getName() + " foi enviado para a prisão!");
     }
 
     public void payBail(Player player) {
