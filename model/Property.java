@@ -1,21 +1,15 @@
 package model;
 
 public class Property extends BoardPosition {
-    private String name;
     private int price;
     private int rent;
     private Player owner;
 
     public Property(String name, int price, int rent, int position) {
-        super(position);
-        this.name = name;
+        super(position, name);
         this.price = price;
         this.rent = rent;
         this.owner = null; 
-    }
-
-    public String getName() {
-        return name;
     }
 
     public int getPrice() {
@@ -45,9 +39,9 @@ public class Property extends BoardPosition {
             owner.updateBalance(rent);   
             System.out.println(player.getName() + " pagou " + rent + " para " + owner.getName());
         } else if (!isOwned()) {
-            System.out.println(player.getName() + " pode comprar " + name + " por " + price);
+            System.out.println(player.getName() + " pode comprar " + getName() + " por " + price);
         } else {
-            System.out.println(player.getName() + " já é o proprietário de " + name);
+            System.out.println(player.getName() + " já é o proprietário de " + getName());
         }
     }
 }

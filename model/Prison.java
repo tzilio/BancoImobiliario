@@ -5,7 +5,7 @@ public class Prison extends BoardPosition {
     private static Prison instance;  
 
     private Prison(int position) {
-        super(position);
+        super(position, "Prisão");
     }
 
     public static Prison getInstance(int position) {

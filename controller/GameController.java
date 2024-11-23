@@ -107,7 +107,7 @@ public class GameController {
 
     private void handleJailTurn(Player player) {
         view.displayMessage(player.getName() + " está na prisão.");
-        int roll = dice.roll();
+        dice.roll();
         view.displayDiceRoll(dice.getDice1(), dice.getDice2());
 
         if (dice.isDouble()) {

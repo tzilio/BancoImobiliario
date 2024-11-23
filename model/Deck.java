@@ -2,12 +2,11 @@ package model;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
-public class Deck implements Iterator<Card> {
+public class Deck {
     private List<Card> cards;
-    private int currentIndex; 
+    private int currentIndex;
     private static Deck instance;
 
     private Deck() {
@@ -36,24 +35,19 @@ public class Deck implements Iterator<Card> {
         currentIndex = 0;
     }
 
-    public Card drawCard() {
-        if (cards.isEmpty()) {
-            System.out.println("O baralho está vazio!");
-            return null;
-        }
-        return cards.remove(0);
-    }
-
-    @Override
-    public boolean hasNext() {
-        return currentIndex < cards.size();
-    }
-
-    @Override
     public Card next() {
-        if (!hasNext()) {
-            throw new IllegalStateException("Não há mais cartas no baralho.");
-        }
-        return cards.get(currentIndex++);
+        Card card = cards.get(currentIndex);
+        currentIndex = (currentIndex + 1) % cards.size(); // Garantia do comportamento circular
+        return card;
+    }
+
+    public boolean hasNext() {
+        return true; //lista circular
+    }
+
+    public void drawCard(Player player) {
+        Card card = next();
+        card.getDescription(); 
+        card.applyEffect(player);
     }
 }

@@ -18,10 +18,8 @@ public class SpaceView extends JPanel {
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
-        // Configuração visual do espaço
         configureSpaceView();
 
-        // Painel para os tokens dos jogadores
         playerTokensPanel = new JPanel();
         playerTokensPanel.setOpaque(false);
         playerTokensPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
@@ -29,18 +27,15 @@ public class SpaceView extends JPanel {
     }
 
     private void configureSpaceView() {
-        // Definir cor de fundo com base no tipo de propriedade
         setBackground(getSpaceColor());
 
-        // Adicionar nome do espaço
-        JLabel nameLabel = new JLabel("<html><center>" + position + "</center></html>");
+        JLabel nameLabel = new JLabel("<html><center>" + boardPosition.getName() + "</center></html>");
         nameLabel.setFont(new Font("Arial", Font.BOLD, 10));
         nameLabel.setHorizontalAlignment(SwingConstants.CENTER);
         add(nameLabel, BorderLayout.NORTH);
     }
 
     private Color getSpaceColor() {
-        // Definir cores baseadas nos grupos de propriedades
         switch (position) {
             case 1:
             case 3: return new Color(150, 75, 0); // Marrom
@@ -63,16 +58,14 @@ public class SpaceView extends JPanel {
             case 32:
             case 34: return Color.GREEN;
             case 37:
-            case 39: return new Color(0, 0, 128); // Azul Escuro
-            default: return Color.LIGHT_GRAY; // Cor padrão
+            case 39: return new Color(0, 0, 128); 
+            default: return Color.LIGHT_GRAY; 
         }
     }
 
     public void addPlayerToken(Player player) {
-        // Carregar o ícone do jogador
         ImageIcon icon = loadImage("view/assets/peao.png");
         if (icon != null) {
-            // Redimensionar a imagem para caber no token
             Image img = icon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
             JLabel tokenLabel = new JLabel(new ImageIcon(img));
             tokenLabel.setName(player.getName()); // Identificação do token
@@ -85,7 +78,6 @@ public class SpaceView extends JPanel {
     }
 
     private ImageIcon loadImage(String path) {
-        // Verifica se a imagem existe e a carrega
         File imgFile = new File(path);
         if (imgFile.exists()) {
             return new ImageIcon(path);

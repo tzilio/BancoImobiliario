@@ -12,8 +12,8 @@ public class BoardView extends JPanel {
     private Board board;
     private Map<Integer, SpaceView> spaceViews;
     private Map<Player, Integer> playerPositions;
-    private int boardSize;  // Número de espaços em cada lado do tabuleiro
-    private int borderPositions; // Número total de posições na borda(posições que vão ser usadas durante o jogo).
+    private int boardSize;  
+    private int borderPositions;
 
     public BoardView(Board board, int boardSize) {
         if (boardSize < 2) {
@@ -33,37 +33,32 @@ public class BoardView extends JPanel {
     }
 
     private void addSpacesToGrid(GridBagConstraints gbc) {
-        int position = 0; // Variável para acompanhar as posições no contorno
+        int position = 0; 
 
-        // Linha superior (posições 0 a boardSize-1)
         for (int i = 0; i < boardSize; i++) {
             gbc.gridx = i;
             gbc.gridy = 0;
-            addSpaceToGrid(position++, gbc);  // Posições 0 a boardSize-1
+            addSpaceToGrid(position++, gbc);  
         }
 
-        // Coluna direita (posições boardSize a 2*boardSize-3)
         for (int i = 1; i < boardSize - 1; i++) {
             gbc.gridx = boardSize - 1;
             gbc.gridy = i;
-            addSpaceToGrid(position++, gbc);  // Posições seguintes
+            addSpaceToGrid(position++, gbc);  
         }
 
-        // Linha inferior (posições 2*boardSize-2 a 3*boardSize-3)
         for (int i = boardSize - 1; i >= 0; i--) {
             gbc.gridx = i;
             gbc.gridy = boardSize - 1;
-            addSpaceToGrid(position++, gbc);  // Posições na linha inferior
+            addSpaceToGrid(position++, gbc); 
         }
 
-        // Coluna esquerda (posições 3*boardSize-3 a 4*boardSize-5)
         for (int i = boardSize - 2; i > 0; i--) {
             gbc.gridx = 0;
             gbc.gridy = i;
-            addSpaceToGrid(position++, gbc);  // Posições na coluna esquerda
+            addSpaceToGrid(position++, gbc);  
         }
 
-        // Espaços centrais (vazio ou logotipo)
         for (int x = 1; x < boardSize - 1; x++) {
             for (int y = 1; y < boardSize - 1; y++) {
                 gbc.gridx = x;
@@ -74,7 +69,6 @@ public class BoardView extends JPanel {
             }
         }
 
-        // Verificação final para garantir que todas as posições foram adicionadas
         for (int pos = 0; pos < borderPositions; pos++) {
             if (!spaceViews.containsKey(pos)) {
                 System.err.println("Erro: Posição " + pos + " não foi adicionada ao spaceViews");
@@ -121,10 +115,8 @@ public class BoardView extends JPanel {
             return;
         }
 
-        // Ajustar a nova posição para garantir que está dentro do intervalo
         newPosition = newPosition % borderPositions;
 
-        // Remover o token da posição anterior
         if (playerPositions.containsKey(player)) {
             int previousPosition = playerPositions.get(player);
             SpaceView previousSpace = spaceViews.get(previousPosition);
@@ -136,10 +128,8 @@ public class BoardView extends JPanel {
             }
         }
 
-        // Atualizar a posição do jogador
         playerPositions.put(player, newPosition);
 
-        // Adicionar o token na nova posição
         SpaceView currentSpace = spaceViews.get(newPosition);
         if (currentSpace != null) {
             currentSpace.addPlayerToken(player);

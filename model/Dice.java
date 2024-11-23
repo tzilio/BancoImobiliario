@@ -37,4 +37,8 @@ public class Dice {
     public int getDice2() {
         return dice2;
     }
+
+    public int getDiceSum() {
+        return dice1+dice2;
+    }
 }

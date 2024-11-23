@@ -3,7 +3,7 @@ package model;
 public class GoToJailSpace extends BoardPosition {
 
     public GoToJailSpace(int position) {
-        super(position);
+        super(position, "Vá para a prisão");
     }
 
     @Override
