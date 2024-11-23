@@ -47,7 +47,7 @@ public class Deck {
 
     public void drawCard(Player player) {
         Card card = next();
-        card.getDescription(); 
+        System.out.println(card.getDescription()); 
         card.applyEffect(player);
     }
 }

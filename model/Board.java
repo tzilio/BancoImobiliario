@@ -7,6 +7,7 @@ public class Board {
     public static final int BOARD_SIZE = 40; 
     private static final int JAIL_POSITION = 10;
     private static final int GO_TO_JAIL_POSITION = 30;
+    private static final int HOLIDAY_POSITION = 20;
     
     private List<BoardPosition> positions;
 
@@ -28,7 +29,7 @@ public class Board {
         positions.add(GoSpace.getInstance(0));
     
         int[] newsPositions = {3, 12, 18, 24, 33, 37};
-        int[] sharePositions = {5, 14, 20, 28, 36, 39};
+        int[] sharePositions = {5, 14, 19, 28, 36, 39};
         Double[] shareMultipliers = {10.0, 20.0, 15.0, 5.0, 10.0, 15.0};
         int[] sharePrices = {300, 500, 450, 200, 350, 400};
     
@@ -47,6 +48,8 @@ public class Board {
                 positions.add(Prison.getInstance(i)); 
             } else if (i == GO_TO_JAIL_POSITION) {
                 positions.add(new GoToJailSpace(i)); 
+            } else if (i == HOLIDAY_POSITION) {
+                positions.add(new Holiday(i)); 
             } else if (isInArray(i, newsPositions)) {
                 positions.add(new NewsSpace(i)); 
             } else if (isInArray(i, sharePositions)) {
