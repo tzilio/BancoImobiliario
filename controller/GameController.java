@@ -54,14 +54,14 @@ public class GameController {
         }
 
         int roll = rollDiceAndDisplay();
-        
+
         movePlayer(currentPlayer, roll);
-        
+
         if (isPlayerSentToJail(currentPlayer)) {
             movePlayer(currentPlayer, board.getJailPosition());
             return;
         }
-        
+
         BoardPosition currentSpace = getPlayerCurrentSpace(currentPlayer);
         applySpaceEffect(currentPlayer, currentSpace);
         moveToNextPlayer();
@@ -102,6 +102,10 @@ public class GameController {
     private void applySpaceEffect(Player player, BoardPosition space) {
         if (space instanceof Property) {
             handleProperty((Property) space, player);
+        } else if (space instanceof NewsSpace) {
+            handleNewsSpace((NewsSpace) space, player);
+        } else if (space instanceof ShareSpace) {
+            handleShareSpace((ShareSpace) space, player);
         }
     }
 
@@ -137,30 +141,62 @@ public class GameController {
         }
     }
 
+    private void handleNewsSpace(NewsSpace newsSpace, Player player) {
+        view.displayMessage(player.getName() + " parou em Notícias!");
+        newsSpace.onLand(player);
+    }
+
+    private void handleShareSpace(ShareSpace shareSpace, Player player) {
+        view.displayMessage(player.getName() + " parou em " + shareSpace.getName() + "!");
+        shareSpace.onLand(player);
+    
+        if (!shareSpace.isOwned()) {
+            view.displayMessage(player.getName() + " pode comprar " + shareSpace.getName() + " por " + shareSpace.getPrice());
+            view.enableBuyPropertyButton(true);
+        }
+    }    
+
+    private void processShareSpacePurchase(ShareSpace shareSpace, Player player) {
+        int price = shareSpace.getPrice();
+        if (player.getBalance() >= price) {
+            player.updateBalance(-price);
+            shareSpace.setOwner(player);
+            view.displayMessage(player.getName() + " comprou " + shareSpace.getName() + " por " + price);
+            view.enableBuyPropertyButton(false);
+        } else {
+            view.displayMessage(player.getName() + " não tem saldo suficiente para comprar " + shareSpace.getName());
+        }
+    }    
+
+    private void processPropertyPurchase(Property property, Player player) {
+        if (player.getBalance() >= property.getPrice()) {
+            player.updateBalance(-property.getPrice());
+            property.setOwner(player);
+            player.addProperty(property);
+            view.displayMessage(player.getName() + " comprou " + property.getName() + " por " + property.getPrice());
+            view.enableBuyPropertyButton(false);
+        } else {
+            view.displayMessage(player.getName() + " não tem saldo suficiente para comprar " + property.getName());
+        }
+    }    
+
     private void buyProperty() {
         Player currentPlayer = players.get(currentPlayerIndex);
         BoardPosition currentPosition = board.getSpace(currentPlayer.getPosition());
-
+    
         if (currentPosition instanceof Property) {
             Property property = (Property) currentPosition;
-            if (currentPlayer.getBalance() >= property.getPrice()) {
-                currentPlayer.updateBalance(-property.getPrice());
-                currentPlayer.addProperty(property);
-                property.setOwner(currentPlayer);
-                view.displayMessage(
-                        currentPlayer.getName() + " comprou " + property.getName() + " por " + property.getPrice());
-                view.enableBuyPropertyButton(false);
-            } else {
-                view.displayMessage(
-                        currentPlayer.getName() + " não tem saldo suficiente para comprar " + property.getName());
-            }
+            processPropertyPurchase(property, currentPlayer);
+        } else if (currentPosition instanceof ShareSpace) {
+            ShareSpace shareSpace = (ShareSpace) currentPosition;
+            processShareSpacePurchase(shareSpace, currentPlayer);
         }
-    }
+    }    
 
     private void chargeRent(Player player, Property property) {
         int rent = property.getRent();
         Player owner = property.getOwner();
-        
+
         if (player.getBalance() >= rent) {
             player.updateBalance(-rent);
             owner.updateBalance(rent);
