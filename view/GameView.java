@@ -2,15 +2,18 @@ package view;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 import model.Player;
 import model.Board;
-import java.util.List;
+import model.Property;
 
 public class GameView extends JFrame {
     private JLabel messageLabel;
     private JLabel diceRollLabel;
     private JButton rollDiceButton;
     private JButton buyPropertyButton;
+    private JButton buildHouseButton; // Botão para construir casa
+    private JComboBox<Property> propertySelectionBox; // Caixa para selecionar propriedade
     private BoardView boardView;
     private JPanel playerInfoPanel; // Painel para exibir informações dos jogadores
     private JButton passTurnButton;
@@ -59,13 +62,20 @@ public class GameView extends JFrame {
     
         rollDiceButton = new JButton("Rolar Dados");
         buyPropertyButton = new JButton("Comprar Propriedade");
+        buildHouseButton = new JButton("Construir Casa"); // Botão para construir casa
         passTurnButton = new JButton("Passar Turno");
     
         buyPropertyButton.setEnabled(false);
+        buildHouseButton.setEnabled(false); // Inicia desabilitado
         passTurnButton.setEnabled(false);
+    
+        propertySelectionBox = new JComboBox<>(); // Caixa de seleção de propriedades
+        propertySelectionBox.setEnabled(false); // Inicia desabilitada
     
         buttonPanel.add(rollDiceButton);
         buttonPanel.add(buyPropertyButton);
+        buttonPanel.add(propertySelectionBox);
+        buttonPanel.add(buildHouseButton);
         buttonPanel.add(passTurnButton);
     
         return buttonPanel;
@@ -103,12 +113,32 @@ public class GameView extends JFrame {
         return buyPropertyButton;
     }
 
+    public JButton getBuildHouseButton() {
+        return buildHouseButton; // Retorna o botão para construir casa
+    }
+
+    public JComboBox<Property> getPropertySelectionBox() {
+        return propertySelectionBox; // Retorna a caixa de seleção de propriedades
+    }
+
     public BoardView getBoardView() {
         return boardView;
     }
 
     public void enableBuyPropertyButton(boolean enable) {
         buyPropertyButton.setEnabled(enable);
+    }
+
+    public void enableBuildHouseButton(boolean enable) {
+        buildHouseButton.setEnabled(enable); // Habilita/desabilita o botão para construir casa
+        propertySelectionBox.setEnabled(enable); // Habilita/desabilita a seleção de propriedades
+    }
+
+    public void updatePropertySelectionBox(List<Property> properties) {
+        propertySelectionBox.removeAllItems();
+        for (Property property : properties) {
+            propertySelectionBox.addItem(property);
+        }
     }
 
     public void updatePlayerInfo(List<Player> players) {
