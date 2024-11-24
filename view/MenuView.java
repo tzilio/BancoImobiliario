@@ -170,6 +170,8 @@ public class MenuView extends JFrame {
             @SuppressWarnings("unchecked")
             List<Player> loadedPlayers = (List<Player>) loadedData[1];
 
+            System.out.println(loadedPlayers.get(0).getPosition());
+
             Bank.setInstance(loadedBank);
 
             Board board = Board.getInstance();
@@ -177,15 +179,12 @@ public class MenuView extends JFrame {
                 GameView gameView = new GameView(board, loadedPlayers, loadedBank);
                 gameView.setVisible(true);
 
-                // Atualiza a posição dos jogadores no tabuleiro
                 for (Player player : loadedPlayers) {
                     gameView.getBoardView().updatePlayerPosition(player, player.getPosition());
                 }
 
-                // Atualiza informações dos jogadores
                 gameView.updatePlayerInfo(loadedPlayers);
 
-                // Inicializa o controlador com o estado carregado
                 GameController gameController = new GameController(loadedPlayers, gameView);
                 gameController.startGame();
             });
