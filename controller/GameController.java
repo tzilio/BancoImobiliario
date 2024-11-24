@@ -35,10 +35,10 @@ public class GameController {
 
     private void initializePlayers() {
         for (Player player : players) {
-            player.setPosition(0);
-            view.getBoardView().updatePlayerPosition(player, 0);
+            view.getBoardView().updatePlayerPosition(player, player.getPosition());
         }
     }
+    
 
     private void setupRollDiceAction() {
         view.getRollDiceButton().addActionListener(e -> {

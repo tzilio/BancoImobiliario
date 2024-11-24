@@ -1,15 +1,35 @@
 package model;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Bank {
+public class Bank implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private static Bank instance; // Instância única da classe
+
     private int totalMoney;  
     private Map<Property, Boolean> mortgagedProperties; 
 
-    public Bank() {
+    private Bank() {
         this.totalMoney = 100000000; 
         this.mortgagedProperties = new HashMap<>();
+    }
+
+    public static Bank getInstance() {
+        if (instance == null) {
+            if (instance == null)  
+                instance = new Bank();
+        }
+        return instance;
+    }
+
+    public static void setInstance(Bank newInstance) {
+        if (newInstance == null) {
+            throw new IllegalArgumentException("A nova instância do banco não pode ser nula.");
+        }
+        instance = newInstance;
     }
 
     public void payPlayer(Player player, int amount) {

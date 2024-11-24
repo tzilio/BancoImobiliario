@@ -1,6 +1,8 @@
 package model;
 
-public abstract class BoardPosition {
+import java.io.Serializable;
+
+public abstract class BoardPosition implements Serializable {
     private int position;  
     private String name;
 

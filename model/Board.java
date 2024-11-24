@@ -84,6 +84,16 @@ public class Board {
         initializeBoard();
     }
 
+    public List<Property> getAllProperties() {
+        List<Property> allProperties = new ArrayList<>();
+        for (BoardPosition position : positions) {
+            if (position instanceof Property) {
+                allProperties.add((Property) position);
+            }
+        }
+        return allProperties;
+    }
+
     public static Board getInstance() {
         if (instance == null) {
             instance = new Board();

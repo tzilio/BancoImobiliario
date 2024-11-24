@@ -54,6 +54,12 @@ public class SpaceView extends JPanel {
         return Color.LIGHT_GRAY; // Se não for Property
     }
 
+    public void clearPlayerTokens() {
+        playerTokensPanel.removeAll();
+        revalidate();
+        repaint();
+    }
+
     public void addPlayerToken(Player player) {
         String colorName = player.getColor();
         String imagePath = "view/assets/peoes/peao_" + colorName + ".png"; // Caminho baseado na cor
