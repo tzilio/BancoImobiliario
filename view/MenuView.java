@@ -20,7 +20,7 @@ public class MenuView extends JFrame {
     private JPanel playersPanel;
     private JButton startButton, loadButton, exitButton;
 
-    private final String[] colors = {"Vermelho", "Azul", "Verde", "Amarelo", "Branco", "Preto"};
+    private final String[] colors = { "Azul", "Roxo", "Branco", "Preto"};
     private final String iconPath = "path/to/image.png"; // Substitua pelo caminho correto da imagem
     private final String backgroundPath = "view/assets/background_menu.jpg"; // Substitua pelo caminho correto da imagem de fundo
 
@@ -66,7 +66,7 @@ public class MenuView extends JFrame {
         JLabel playerCountLabel = new JLabel("Quantidade de Jogadores: ");
         playerCountLabel.setForeground(Color.WHITE); // Texto branco
         playerCountLabel.setFont(new Font("Arial", Font.BOLD, 18)); // Fonte maior
-        playerCountComboBox = new JComboBox<>(new Integer[]{2, 3, 4, 5, 6});
+        playerCountComboBox = new JComboBox<>(new Integer[]{2, 3, 4});
         playerCountComboBox.setFont(new Font("Arial", Font.PLAIN, 18));
         playerCountComboBox.addActionListener(this::updatePlayerInputs);
         topPanel.add(playerCountLabel);
