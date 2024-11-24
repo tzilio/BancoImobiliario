@@ -3,19 +3,21 @@ package view;
 import javax.swing.*;
 import java.awt.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import model.Board;
 import model.BoardPosition;
+import model.Observer;
 import model.Player;
 
-public class BoardView extends JPanel {
+public class BoardView extends JPanel implements Observer{
     private Board board;
     private Map<Integer, SpaceView> spaceViews;
     private Map<Player, Integer> playerPositions;
-    private int boardSize;  
+    private int boardSize;
     private int borderPositions;
 
-    public BoardView(Board board, int boardSize) {
+    public BoardView(Board board, int boardSize, List<Player> players) {
         if (boardSize < 2) {
             throw new IllegalArgumentException("boardSize deve ser pelo menos 2.");
         }
@@ -30,33 +32,38 @@ public class BoardView extends JPanel {
         gbc.fill = GridBagConstraints.BOTH;
 
         addSpacesToGrid(gbc);
+
+        // Registra o BoardView como observador dos jogadores
+        for (Player player : players) {
+            player.addObserver(() -> updatePlayerPosition(player, player.getPosition()));
+        }
     }
 
     private void addSpacesToGrid(GridBagConstraints gbc) {
-        int position = 0; 
+        int position = 0;
 
         for (int i = 0; i < boardSize; i++) {
             gbc.gridx = i;
             gbc.gridy = 0;
-            addSpaceToGrid(position++, gbc);  
+            addSpaceToGrid(position++, gbc);
         }
 
         for (int i = 1; i < boardSize - 1; i++) {
             gbc.gridx = boardSize - 1;
             gbc.gridy = i;
-            addSpaceToGrid(position++, gbc);  
+            addSpaceToGrid(position++, gbc);
         }
 
         for (int i = boardSize - 1; i >= 0; i--) {
             gbc.gridx = i;
             gbc.gridy = boardSize - 1;
-            addSpaceToGrid(position++, gbc); 
+            addSpaceToGrid(position++, gbc);
         }
 
         for (int i = boardSize - 2; i > 0; i--) {
             gbc.gridx = 0;
             gbc.gridy = i;
-            addSpaceToGrid(position++, gbc);  
+            addSpaceToGrid(position++, gbc);
         }
 
         for (int x = 1; x < boardSize - 1; x++) {
@@ -70,11 +77,8 @@ public class BoardView extends JPanel {
         }
 
         for (int pos = 0; pos < borderPositions; pos++) {
-            if (!spaceViews.containsKey(pos)) {
+            if (!spaceViews.containsKey(pos)) 
                 System.err.println("Erro: Posição " + pos + " não foi adicionada ao spaceViews");
-            } else {
-                System.out.println("Posição " + pos + " adicionada corretamente.");
-            }
         }
     }
 
@@ -83,7 +87,6 @@ public class BoardView extends JPanel {
         SpaceView spaceView = new SpaceView(boardPosition, position);
         spaceViews.put(position, spaceView);
 
-        // Ajuste do tamanho dos espaços
         if (isCornerPosition(position)) {
             spaceView.setPreferredSize(new Dimension(80, 80));
         } else {
@@ -137,4 +140,13 @@ public class BoardView extends JPanel {
             System.err.println("Erro: Nova posição não encontrada - " + newPosition);
         }
     }
+
+    @Override
+    public void update() {
+        for (Map.Entry<Player, Integer> entry : playerPositions.entrySet()) {
+            Player player = entry.getKey();
+            updatePlayerPosition(player, player.getPosition());
+        }
+    }
+
 }

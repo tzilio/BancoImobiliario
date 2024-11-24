@@ -12,6 +12,7 @@ public class GameController {
     private int currentPlayerIndex;
     private GameView view;
     private Prison prison;
+    private boolean awaitingTurnEnd;
 
     public GameController(List<Player> players, GameView view) {
         this.players = players;
@@ -20,9 +21,11 @@ public class GameController {
         this.view = view;
         this.currentPlayerIndex = 0;
         this.prison = Prison.getInstance(board.getJailPosition());
+        this.awaitingTurnEnd = false; // Inicializa o estado do turno
         initializePlayers();
         setupRollDiceAction();
         setupBuyPropertyAction();
+        setupPassTurnAction();
     }
 
     public void startGame() {
@@ -38,15 +41,35 @@ public class GameController {
     }
 
     private void setupRollDiceAction() {
-        view.getRollDiceButton().addActionListener(e -> nextTurn());
+        view.getRollDiceButton().addActionListener(e -> {
+            if (!awaitingTurnEnd) {
+                nextTurn();
+            } else {
+                view.displayMessage("Você precisa encerrar o turno atual antes de jogar novamente!");
+            }
+        });
     }
 
     private void setupBuyPropertyAction() {
         view.getBuyPropertyButton().addActionListener(e -> buyProperty());
     }
 
+    private void setupPassTurnAction() {
+        view.getPassTurnButton().addActionListener(e -> {
+            if (awaitingTurnEnd) {
+                endTurn();
+            } else {
+                view.displayMessage("Você precisa rolar os dados antes de passar o turno!");
+            }
+        });
+    }
+
     private void nextTurn() {
         view.enableBuyPropertyButton(false);
+        view.getRollDiceButton().setEnabled(false); // Desativa "Rolar Dados"
+        view.getPassTurnButton().setEnabled(true);  // Ativa "Passar Turno"
+        awaitingTurnEnd = true;
+
         Player currentPlayer = players.get(currentPlayerIndex);
 
         if (isPlayerInJail(currentPlayer)) {
@@ -54,23 +77,20 @@ public class GameController {
         }
 
         int roll = rollDiceAndDisplay();
-
         movePlayer(currentPlayer, roll);
 
         if (isPlayerSentToJail(currentPlayer)) {
-            movePlayer(currentPlayer, board.getJailPosition());
             return;
         }
 
         BoardPosition currentSpace = getPlayerCurrentSpace(currentPlayer);
         applySpaceEffect(currentPlayer, currentSpace);
-        moveToNextPlayer();
     }
 
     private boolean isPlayerInJail(Player player) {
         if (player.isInJail()) {
             handleJailTurn(player);
-            moveToNextPlayer();
+            endTurn();
             return true;
         }
         return false;
@@ -83,13 +103,14 @@ public class GameController {
     }
 
     private void movePlayer(Player player, int roll) {
-        processPlayerMove(player, roll);
+        player.move(roll);
+        view.getBoardView().updatePlayerPosition(player, player.getPosition());
+        view.displayMessage(player.getName() + " rolou " + roll + " e se moveu para a posição " + player.getPosition());
     }
 
     private boolean isPlayerSentToJail(Player player) {
         if (player.getPosition() == board.getGoToJailPosition()) {
             sendPlayerToJail(player);
-            moveToNextPlayer();
             return true;
         }
         return false;
@@ -100,73 +121,49 @@ public class GameController {
     }
 
     private void applySpaceEffect(Player player, BoardPosition space) {
+        space.onLand(player);
+    
         if (space instanceof Property) {
             handleProperty((Property) space, player);
-        } else if (space instanceof NewsSpace) {
-            handleNewsSpace((NewsSpace) space, player);
         } else if (space instanceof ShareSpace) {
             handleShareSpace((ShareSpace) space, player);
+        } else if (space instanceof Tax) {
+            view.displayMessage(player.getName() + " pagou o imposto!");
+        } else if (space instanceof TaxReturn) {
+            view.displayMessage(player.getName() + " recebeu um retorno de imposto!");
+        } else if (space instanceof NewsSpace) {
+            view.displayMessage(player.getName() + " parou em Notícias!");
         }
     }
-
-    private void handleJailTurn(Player player) {
-        view.displayMessage(player.getName() + " está na prisão.");
-        dice.roll();
-        view.displayDiceRoll(dice.getDice1(), dice.getDice2());
-
-        if (dice.isDouble()) {
-            player.setInJail(false);
-            view.displayMessage(player.getName() + " tirou um número duplo e saiu da prisão!");
-            nextTurn();
-        } else {
-            view.displayMessage(player.getName() + " não conseguiu sair da prisão.");
-        }
-    }
-
-    private void processPlayerMove(Player player, int roll) {
-        player.move(roll);
-        view.getBoardView().updatePlayerPosition(player, player.getPosition());
-        view.displayMessage(player.getName() + " rolou " + roll + " e se moveu para a posição " + player.getPosition());
-    }
-
+    
     private void handleProperty(Property property, Player player) {
         if (property.getOwner() == null) {
-            view.displayMessage(
-                    player.getName() + " pode comprar " + property.getName() + " por " + property.getPrice());
+            view.displayMessage(player.getName() + " pode comprar " + property.getName() + " por " + property.getPrice());
             view.enableBuyPropertyButton(true);
-        } else if (!property.getOwner().equals(player)) {
-            chargeRent(player, property);
-        } else {
+        } else if (property.getOwner().equals(player)) {
             view.displayMessage(player.getName() + " parou em sua própria propriedade " + property.getName());
         }
     }
-
-    private void handleNewsSpace(NewsSpace newsSpace, Player player) {
-        view.displayMessage(player.getName() + " parou em Notícias!");
-        newsSpace.onLand(player);
-    }
-
+    
     private void handleShareSpace(ShareSpace shareSpace, Player player) {
         view.displayMessage(player.getName() + " parou em " + shareSpace.getName() + "!");
-        shareSpace.onLand(player);
     
         if (!shareSpace.isOwned()) {
             view.displayMessage(player.getName() + " pode comprar " + shareSpace.getName() + " por " + shareSpace.getPrice());
-            view.enableBuyPropertyButton(true);
+            view.enableBuyPropertyButton(true); // Habilita o botão de compra
         }
-    }    
+     }    
 
-    private void processShareSpacePurchase(ShareSpace shareSpace, Player player) {
-        int price = shareSpace.getPrice();
-        if (player.getBalance() >= price) {
-            player.updateBalance(-price);
-            shareSpace.setOwner(player);
-            view.displayMessage(player.getName() + " comprou " + shareSpace.getName() + " por " + price);
-            view.enableBuyPropertyButton(false);
-        } else {
-            view.displayMessage(player.getName() + " não tem saldo suficiente para comprar " + shareSpace.getName());
+    private void buyProperty() {
+        Player currentPlayer = players.get(currentPlayerIndex);
+        BoardPosition currentPosition = board.getSpace(currentPlayer.getPosition());
+
+        if (currentPosition instanceof Property) {
+            processPropertyPurchase((Property) currentPosition, currentPlayer);
+        } else if (currentPosition instanceof ShareSpace) {
+            processShareSpacePurchase((ShareSpace) currentPosition, currentPlayer);
         }
-    }    
+    }
 
     private void processPropertyPurchase(Property property, Player player) {
         if (player.getBalance() >= property.getPrice()) {
@@ -178,20 +175,19 @@ public class GameController {
         } else {
             view.displayMessage(player.getName() + " não tem saldo suficiente para comprar " + property.getName());
         }
-    }    
+    }
 
-    private void buyProperty() {
-        Player currentPlayer = players.get(currentPlayerIndex);
-        BoardPosition currentPosition = board.getSpace(currentPlayer.getPosition());
-    
-        if (currentPosition instanceof Property) {
-            Property property = (Property) currentPosition;
-            processPropertyPurchase(property, currentPlayer);
-        } else if (currentPosition instanceof ShareSpace) {
-            ShareSpace shareSpace = (ShareSpace) currentPosition;
-            processShareSpacePurchase(shareSpace, currentPlayer);
+    private void processShareSpacePurchase(ShareSpace shareSpace, Player player) {
+        int price = shareSpace.getPrice();
+        if (player.getBalance() >= price) {
+            player.updateBalance(-price);
+            shareSpace.setOwner(player);
+            view.displayMessage(player.getName() + " comprou " + shareSpace.getName() + " por " + price);
+            view.enableBuyPropertyButton(false);
+        } else {
+            view.displayMessage(player.getName() + " não tem saldo suficiente para comprar " + shareSpace.getName());
         }
-    }    
+    }
 
     private void chargeRent(Player player, Property property) {
         int rent = property.getRent();
@@ -212,6 +208,13 @@ public class GameController {
         view.getBoardView().updatePlayerPosition(player, player.getPosition());
     }
 
+    private void endTurn() {
+        awaitingTurnEnd = false;
+        moveToNextPlayer();
+        view.getRollDiceButton().setEnabled(true);
+        view.getPassTurnButton().setEnabled(false);
+    }
+
     private void moveToNextPlayer() {
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
         displayCurrentPlayerTurn();
@@ -220,4 +223,19 @@ public class GameController {
     private void displayCurrentPlayerTurn() {
         view.displayPlayerTurn(players.get(currentPlayerIndex));
     }
+
+    private void handleJailTurn(Player player) {
+        view.displayMessage(player.getName() + " está na prisão.");
+        dice.roll();
+        view.displayDiceRoll(dice.getDice1(), dice.getDice2());
+
+        if (dice.isDouble()) {
+            player.setInJail(false);
+            view.displayMessage(player.getName() + " tirou um número duplo e saiu da prisão!");
+            nextTurn();
+        } else {
+            view.displayMessage(player.getName() + " não conseguiu sair da prisão.");
+        }
+    }
+
 }

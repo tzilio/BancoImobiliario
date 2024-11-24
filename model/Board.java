@@ -64,7 +64,6 @@ public class Board {
                 positions.add(new ShareSpace(i, shareName, multiplier, price));
                 shareIndex++;
             } else {
-                // Espaços de propriedades padrão
                 positions.add(new Property("Property " + i, 200 + i * 10, 50 + i * 5, i));
             }
         }

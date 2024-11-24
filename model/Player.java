@@ -3,7 +3,7 @@ package model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Player {
+public class Player extends Observable {
     private String name;
     private int balance;
     private int position;
@@ -39,11 +39,11 @@ public class Player {
         observers.remove(observer);
     }
 
-    private void notifyObservers() {
-        for (Observer observer : observers) {
-            observer.update();
+    public void notifyObservers() {
+            for (Observer observer : observers) {
+                observer.update();
+            }
         }
-    }
 
     // Getters e setters
     public String getName() {

@@ -24,11 +24,12 @@ public class Deck {
     }
 
     private void initializeDeck() {
-        cards.add(new Card("Avance para o ponto de partida e ganhe 200!", 200));
+        cards.add(new Card("Avance para o ponto de partida e ganhe 200!", 200, 0, true));
         cards.add(new Card("Pague uma taxa de 100", -100));
-        cards.add(new Card("Avance três espaços", 0, 3));
-        cards.add(new Card("Volte dois espaços", 0, -2));
+        cards.add(new Card("Avance três espaços", 0, 3, false));
+        cards.add(new Card("Volte dois espaços", 0, -2, false));
     }
+    
 
     public void shuffle() {
         Collections.shuffle(cards);

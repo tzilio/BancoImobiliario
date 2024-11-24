@@ -13,6 +13,7 @@ public class GameView extends JFrame {
     private JButton buyPropertyButton;
     private BoardView boardView;
     private JPanel playerInfoPanel; // Painel para exibir informações dos jogadores
+    private JButton passTurnButton;
 
     public GameView(Board board, List<Player> players) {
         setupLayout(board, players);
@@ -22,44 +23,65 @@ public class GameView extends JFrame {
         setLocationRelativeTo(null);
     }
 
-    private void setupLayout(Board board, List<Player> players) {
-        setLayout(new BorderLayout());
-
+    private void setupHeader() {
         messageLabel = new JLabel("Bem-vindo ao Banco Imobiliário!");
         add(messageLabel, BorderLayout.NORTH);
+    }    
 
+    private void setupCenter(Board board, List<Player> players) {
         diceRollLabel = new JLabel("Resultado dos Dados: ");
         add(diceRollLabel, BorderLayout.CENTER);
+    
+        boardView = new BoardView(board, 11, players);
+        add(boardView, BorderLayout.CENTER);
+    }    
 
-        rollDiceButton = new JButton("Rolar Dados");
-        buyPropertyButton = new JButton("Comprar Propriedade");
-        buyPropertyButton.setEnabled(false);
-
-        // Painel inferior para botões e informações dos jogadores
+    private void setupBottomPanel(List<Player> players) {
         JPanel bottomPanel = new JPanel(new BorderLayout());
-        
-        // Painel para botões de ação
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.add(rollDiceButton);
-        buttonPanel.add(buyPropertyButton);
-        
-        // Painel para exibir informações dos jogadores
+    
+        JPanel buttonPanel = setupButtonPanel();
+    
         playerInfoPanel = new JPanel();
         playerInfoPanel.setLayout(new BoxLayout(playerInfoPanel, BoxLayout.Y_AXIS));
-        
-        // Adiciona informações de cada jogador ao painel de informações
+    
         for (Player player : players) {
             PlayerInfoView playerInfoView = new PlayerInfoView(player);
             playerInfoPanel.add(playerInfoView);
         }
-        
-        bottomPanel.add(buttonPanel, BorderLayout.WEST);
-        bottomPanel.add(playerInfoPanel, BorderLayout.EAST);
+    
+        bottomPanel.add(buttonPanel, BorderLayout.EAST);
+        bottomPanel.add(playerInfoPanel, BorderLayout.WEST);
         add(bottomPanel, BorderLayout.SOUTH);
-
-        boardView = new BoardView(board, 11);
-        add(boardView, BorderLayout.CENTER);
     }
+    
+    private JPanel setupButtonPanel() {
+        JPanel buttonPanel = new JPanel();
+    
+        rollDiceButton = new JButton("Rolar Dados");
+        buyPropertyButton = new JButton("Comprar Propriedade");
+        passTurnButton = new JButton("Passar Turno");
+    
+        buyPropertyButton.setEnabled(false);
+        passTurnButton.setEnabled(false);
+    
+        buttonPanel.add(rollDiceButton);
+        buttonPanel.add(buyPropertyButton);
+        buttonPanel.add(passTurnButton);
+    
+        return buttonPanel;
+    }    
+
+    private void setupLayout(Board board, List<Player> players) {
+        setLayout(new BorderLayout());
+    
+        setupHeader();
+        setupCenter(board, players);
+        setupBottomPanel(players);
+    }    
+
+    public JButton getPassTurnButton() {
+        return passTurnButton;
+    }    
 
     public void displayMessage(String message) {
         messageLabel.setText(message);
