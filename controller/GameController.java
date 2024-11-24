@@ -189,19 +189,6 @@ public class GameController {
         }
     }
 
-    private void chargeRent(Player player, Property property) {
-        int rent = property.getRent();
-        Player owner = property.getOwner();
-
-        if (player.getBalance() >= rent) {
-            player.updateBalance(-rent);
-            owner.updateBalance(rent);
-            view.displayMessage(player.getName() + " pagou " + rent + " de aluguel a " + owner.getName());
-        } else {
-            view.displayMessage(player.getName() + " não tem saldo suficiente para pagar o aluguel!");
-        }
-    }
-
     private void sendPlayerToJail(Player player) {
         prison.sendToJail(player);
         view.displayMessage(player.getName() + " foi enviado para a prisão!");
