@@ -55,7 +55,10 @@ public class SpaceView extends JPanel {
     }
 
     public void addPlayerToken(Player player) {
-        ImageIcon icon = loadImage("view/assets/peao.png");
+        String colorName = player.getColor();
+        String imagePath = "view/assets/peoes/peao_" + colorName + ".png"; // Caminho baseado na cor
+        ImageIcon icon = loadImage(imagePath);
+    
         if (icon != null) {
             Image img = icon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
             JLabel tokenLabel = new JLabel(new ImageIcon(img));
@@ -64,9 +67,10 @@ public class SpaceView extends JPanel {
             revalidate();
             repaint();
         } else {
-            System.err.println("Imagem não encontrada: " + "/home/tiago/paradigmas/BancoImobiliario/view/peao-de-xadrez(1).png");
+            System.err.println("Imagem não encontrada: " + imagePath);
         }
     }
+    
 
     private ImageIcon loadImage(String path) {
         File imgFile = new File(path);
