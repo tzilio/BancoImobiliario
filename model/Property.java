@@ -3,6 +3,8 @@ package model;
 import java.util.ArrayList;
 
 public class Property extends BoardPosition {
+    private static final long serialVersionUID = 1L;
+
     private int price;
     private int rent;
     private Player owner;

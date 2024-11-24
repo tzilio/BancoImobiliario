@@ -2,6 +2,7 @@ package view;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,17 @@ public class BoardView extends JPanel implements Observer{
         // Registra o BoardView como observador dos jogadores
         for (Player player : players) {
             player.addObserver(() -> updatePlayerPosition(player, player.getPosition()));
+        }
+    }
+
+    public void updatePlayerTokens(List<Player> players) {
+        for (SpaceView space : spaceViews.values()) {
+            space.clearPlayerTokens();
+        }
+
+        for (Player player : players) {
+            int position = player.getPosition();
+            spaceViews.get(position).addPlayerToken(player);
         }
     }
 
@@ -139,6 +151,10 @@ public class BoardView extends JPanel implements Observer{
         } else {
             System.err.println("Erro: Nova posição não encontrada - " + newPosition);
         }
+    }
+
+    public List<SpaceView> getSpaces() {
+        return new ArrayList<>(spaceViews.values()); // Converte os valores do Map para uma lista
     }
 
     @Override

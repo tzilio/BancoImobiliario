@@ -1,8 +1,10 @@
 package view;
 
 import controller.GameController;
+import model.Bank;
 import model.Board;
 import model.Player;
+import model.SaveGameManager;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -18,9 +20,11 @@ public class MenuView extends JFrame {
     private JPanel playersPanel;
     private JButton startButton, loadButton, exitButton;
 
-    private final String[] colors = {"Vermelho", "Azul", "Verde", "Amarelo", "Branco", "Preto"};
-    private final String iconPath = "path/to/image.png"; // Substitua pelo caminho correto da imagem
-    private final String backgroundPath = "view/assets/background_menu.jpg"; // Substitua pelo caminho correto da imagem de fundo
+    private final String[] colors = { "Vermelho", "Azul", "Verde", "Amarelo", "Branco", "Preto" };
+    // private final String iconPath = "path/to/image.png"; // Substitua pelo
+    // caminho correto da imagem
+    private final String backgroundPath = "view/assets/background_menu.jpg"; // Substitua pelo caminho correto da imagem
+                                                                             // de fundo
 
     public MenuView() {
         setTitle("Configuração do Jogo - Banco Imobiliário");
@@ -39,7 +43,8 @@ public class MenuView extends JFrame {
         backgroundLabel.setBounds(0, 0, screenWidth, screenHeight);
 
         ImageIcon originalBackground = new ImageIcon(backgroundPath);
-        Image scaledBackground = originalBackground.getImage().getScaledInstance(screenWidth, screenHeight, Image.SCALE_SMOOTH);
+        Image scaledBackground = originalBackground.getImage().getScaledInstance(screenWidth, screenHeight,
+                Image.SCALE_SMOOTH);
         backgroundLabel.setIcon(new ImageIcon(scaledBackground));
         add(backgroundLabel);
 
@@ -63,7 +68,7 @@ public class MenuView extends JFrame {
         JLabel playerCountLabel = new JLabel("Quantidade de Jogadores: ");
         playerCountLabel.setForeground(Color.WHITE); // Texto branco
         playerCountLabel.setFont(new Font("Arial", Font.BOLD, 18)); // Fonte maior
-        playerCountComboBox = new JComboBox<>(new Integer[]{2, 3, 4, 5, 6});
+        playerCountComboBox = new JComboBox<>(new Integer[] { 2, 3, 4, 5, 6 });
         playerCountComboBox.setFont(new Font("Arial", Font.PLAIN, 18));
         playerCountComboBox.addActionListener(this::updatePlayerInputs);
         topPanel.add(playerCountLabel);
@@ -148,7 +153,7 @@ public class MenuView extends JFrame {
         Board board = Board.getInstance();
 
         SwingUtilities.invokeLater(() -> {
-            GameView gameView = new GameView(board, players);
+            GameView gameView = new GameView(board, players, Bank.getInstance());
             gameView.setVisible(true);
 
             GameController gameController = new GameController(players, gameView);
@@ -159,10 +164,38 @@ public class MenuView extends JFrame {
     }
 
     private void onLoadGame() {
-        JOptionPane.showMessageDialog(this, "Carregar Jogo ainda não implementado!");
+        Object[] loadedData = SaveGameManager.loadGame("BANQUIMOBILHARIO");
+        if (loadedData != null) {
+            Bank loadedBank = (Bank) loadedData[0];
+            @SuppressWarnings("unchecked")
+            List<Player> loadedPlayers = (List<Player>) loadedData[1];
+
+            Bank.setInstance(loadedBank);
+
+            Board board = Board.getInstance();
+            SwingUtilities.invokeLater(() -> {
+                GameView gameView = new GameView(board, loadedPlayers, loadedBank);
+                gameView.setVisible(true);
+
+                // Atualiza a posição dos jogadores no tabuleiro
+                for (Player player : loadedPlayers) {
+                    gameView.getBoardView().updatePlayerPosition(player, player.getPosition());
+                }
+
+                // Atualiza informações dos jogadores
+                gameView.updatePlayerInfo(loadedPlayers);
+
+                // Inicializa o controlador com o estado carregado
+                GameController gameController = new GameController(loadedPlayers, gameView);
+                gameController.startGame();
+            });
+
+            setVisible(false); // Oculta o menu principal
+        } else {
+            JOptionPane.showMessageDialog(this, "Erro ao carregar o jogo!");
+        }
     }
 
-    // Classe personalizada para botões arredondados
     private static class RoundedButton extends JButton {
         private final Color backgroundColor;
         private final int borderRadius;

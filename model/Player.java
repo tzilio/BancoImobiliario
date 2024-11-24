@@ -1,18 +1,19 @@
 package model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Player extends Observable {
+public class Player implements Serializable {
     private String name;
     private int balance;
     private int position;
     private List<Property> properties;
     private boolean inJail;
-    private String color; // Nova propriedade para a cor do peão
-    
-    // Lista de observadores
-    private List<Observer> observers;
+    private String color; // Cor do peão
+
+    // Lista de observadores (transient, pois não deve ser serializada)
+    private transient List<Observer> observers;
 
     // Construtor principal
     public Player(String name, int initialBalance, String color) {
@@ -21,7 +22,7 @@ public class Player extends Observable {
         this.position = 0;
         this.properties = new ArrayList<>();
         this.inJail = false;
-        this.color = color; // Inicializa a cor do peão
+        this.color = color;
         this.observers = new ArrayList<>();
     }
 
@@ -32,18 +33,25 @@ public class Player extends Observable {
 
     // Métodos para gerenciar observadores
     public void addObserver(Observer observer) {
+        if (observers == null) { // Garantia caso observers seja null após desserialização
+            observers = new ArrayList<>();
+        }
         observers.add(observer);
     }
 
     public void removeObserver(Observer observer) {
-        observers.remove(observer);
+        if (observers != null) {
+            observers.remove(observer);
+        }
     }
 
     public void notifyObservers() {
+        if (observers != null) {
             for (Observer observer : observers) {
                 observer.update();
             }
         }
+    }
 
     // Getters e setters
     public String getName() {
@@ -54,23 +62,28 @@ public class Player extends Observable {
         return balance;
     }
 
-    public void setPosition(int position) {
-        this.position = position;
-        notifyObservers(); // Notifica os observadores ao atualizar a posição
-    }
-
-    public void updateBalance(int amount) {
-        this.balance += amount;
-        notifyObservers(); // Notifica os observadores ao atualizar o saldo
+    public void setBalance(int balance) {
+        this.balance = balance;
+        notifyObservers();
     }
 
     public int getPosition() {
         return position;
     }
 
+    public void setPosition(int position) {
+        this.position = position;
+        notifyObservers();
+    }
+
+    public void updateBalance(int amount) {
+        this.balance += amount;
+        notifyObservers();
+    }
+
     public void move(int steps) {
         this.position = (position + steps) % Board.BOARD_SIZE;
-        notifyObservers(); // Notifica os observadores ao mover o jogador
+        notifyObservers();
     }
 
     public List<Property> getProperties() {
@@ -79,7 +92,7 @@ public class Player extends Observable {
 
     public void addProperty(Property property) {
         properties.add(property);
-        notifyObservers(); // Notifica os observadores ao adicionar uma propriedade
+        notifyObservers();
     }
 
     public boolean isInJail() {
@@ -88,7 +101,7 @@ public class Player extends Observable {
 
     public void setInJail(boolean inJail) {
         this.inJail = inJail;
-        notifyObservers(); // Notifica os observadores ao atualizar o estado de prisão
+        notifyObservers();
     }
 
     public String getColor() {
@@ -97,6 +110,12 @@ public class Player extends Observable {
 
     public void setColor(String color) {
         this.color = color;
-        notifyObservers(); // Notifica os observadores ao alterar a cor
+        notifyObservers();
+    }
+
+    // Método para restaurar estado após desserialização
+    private Object readResolve() {
+        this.observers = new ArrayList<>();
+        return this;
     }
 }
