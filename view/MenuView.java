@@ -164,7 +164,7 @@ public class MenuView extends JFrame {
     }
 
     private void onLoadGame() {
-        Object[] loadedData = SaveGameManager.loadGame("BANQUIMOBILHARIO");
+        Object[] loadedData = SaveGameManager.loadGame("BANQUIMOBILHARIO_savegame.dat");
         if (loadedData != null) {
             Bank loadedBank = (Bank) loadedData[0];
             @SuppressWarnings("unchecked")

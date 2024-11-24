@@ -70,12 +70,12 @@ public class GameView extends JFrame {
     }
 
     private void handleSaveGame(List<Player> players) {
-            SaveGameManager.saveGame("BANQUIMOBILHARIO", Bank.getInstance(), players);
+            SaveGameManager.saveGame("BANQUIMOBILHARIO_savegame.dat", Bank.getInstance(), players);
         displayMessage("Jogo salvo com sucesso!");
     }
 
     private void handleLoadGame(List<Player> players, Bank bank) {
-        Object[] loadedData = SaveGameManager.loadGame("BANQUIMOBILHARIO");
+        Object[] loadedData = SaveGameManager.loadGame("BANQUIMOBILHARIO_savegame.dat");
         if (loadedData != null) {
             updateGameState(loadedData, players, bank);
             displayMessage("Jogo carregado com sucesso!");
