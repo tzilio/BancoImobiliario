@@ -5,6 +5,7 @@ import java.awt.*;
 import java.io.File;
 import model.BoardPosition;
 import model.Player;
+import model.Property;
 
 public class SpaceView extends JPanel {
     private BoardPosition boardPosition;
@@ -36,31 +37,21 @@ public class SpaceView extends JPanel {
     }
 
     private Color getSpaceColor() {
-        switch (position) {
-            case 1:
-            case 3: return new Color(150, 75, 0); // Marrom
-            case 6:
-            case 8:
-            case 9: return Color.CYAN;
-            case 11:
-            case 13:
-            case 14: return Color.PINK;
-            case 16:
-            case 18:
-            case 19: return Color.ORANGE;
-            case 21:
-            case 23:
-            case 24: return Color.RED;
-            case 26:
-            case 27:
-            case 29: return Color.YELLOW;
-            case 31:
-            case 32:
-            case 34: return Color.GREEN;
-            case 37:
-            case 39: return new Color(0, 0, 128); 
-            default: return Color.LIGHT_GRAY; 
+        if (boardPosition instanceof Property) {
+            Property property = (Property) boardPosition;
+            switch (property.getCategory()) {
+                case "Roxo": return new Color(150, 75, 0); // Marrom
+                case "Ciano": return Color.CYAN;
+                case "Rosa": return Color.PINK;
+                case "Laranja": return Color.ORANGE;
+                case "Vermelho": return Color.RED;
+                case "Amarelo": return Color.YELLOW;
+                case "Verde": return Color.GREEN;
+                case "Azul": return new Color(0, 0, 128); // Azul escuro
+                default: return Color.LIGHT_GRAY; // Cor padrão para categorias desconhecidas
+            }
         }
+        return Color.LIGHT_GRAY; // Se não for Property
     }
 
     public void addPlayerToken(Player player) {
