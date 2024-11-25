@@ -4,6 +4,7 @@ import controller.GameController;
 import model.Board;
 import model.Player;
 import model.Bank;
+import model.SaveGameManager;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -177,7 +178,35 @@ public class MenuView extends JFrame {
     }    
 
     private void onLoadGame() {
-        JOptionPane.showMessageDialog(this, "Carregar Jogo ainda não implementado!");
+        Object[] loadedData = SaveGameManager.loadGame("BANQUIMOBILHARIO_savegame.dat");
+        if (loadedData != null) {
+            Bank loadedBank = (Bank) loadedData[0];
+            @SuppressWarnings("unchecked")
+            List<Player> loadedPlayers = (List<Player>) loadedData[1];
+
+            System.out.println(loadedPlayers.get(0).getPosition());
+
+            Bank.setInstance(loadedBank);
+
+            Board board = Board.getInstance();
+            SwingUtilities.invokeLater(() -> {
+                GameView gameView = new GameView(board, loadedPlayers, loadedBank);
+                gameView.setVisible(true);
+
+                for (Player player : loadedPlayers) {
+                    gameView.getBoardView().updatePlayerPosition(player, player.getPosition());
+                }
+
+                gameView.updatePlayerInfo(loadedPlayers);
+
+                GameController gameController = new GameController(loadedPlayers, gameView);
+                gameController.startGame();
+            });
+
+            setVisible(false); // Oculta o menu principal
+        } else {
+            JOptionPane.showMessageDialog(this, "Erro ao carregar o jogo!");
+        }
     }
 
     // Classe personalizada para botões arredondados
