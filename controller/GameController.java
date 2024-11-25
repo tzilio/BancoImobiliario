@@ -1,6 +1,7 @@
 package controller;
 
 import model.*;
+import view.DiceView;
 import view.GameView;
 
 import java.util.List;
@@ -43,12 +44,17 @@ public class GameController {
     private void setupRollDiceAction() {
         view.getRollDiceButton().addActionListener(e -> {
             if (!awaitingTurnEnd) {
-                nextTurn();
+                rollDiceAndDisplay();
+                view.getRollDiceButton().setEnabled(false); // Desativa rolar após uso
+                view.getPassTurnButton().setEnabled(true);  // Habilita passar turno
+                awaitingTurnEnd = true;
             } else {
                 view.displayMessage("Você precisa encerrar o turno atual antes de jogar novamente!");
             }
         });
     }
+    
+    
 
     private void setupBuyPropertyAction() {
         view.getBuyPropertyButton().addActionListener(e -> buyProperty());
@@ -76,8 +82,7 @@ public class GameController {
             return;
         }
 
-        int roll = rollDiceAndDisplay();
-        movePlayer(currentPlayer, roll);
+        rollDiceAndDisplay();
 
         if (isPlayerSentToJail(currentPlayer)) {
             return;
@@ -96,11 +101,31 @@ public class GameController {
         return false;
     }
 
-    private int rollDiceAndDisplay() {
-        int roll = dice.roll();
-        view.displayDiceRoll(dice.getDice1(), dice.getDice2());
-        return roll;
+    private void rollDiceAndDisplay() {
+        DiceView diceView = new DiceView();
+
+        diceView.addDiceRollListener((dice1, dice2) -> {
+            view.displayDiceRoll((dice1), dice2);
+            processDiceResult(dice1, dice2);
+        });
+
+        diceView.setVisible(true);
     }
+
+    private void processDiceResult(int dice1, int dice2) {
+        int roll = dice1 + dice2; // Soma dos valores dos dados
+        Player currentPlayer = players.get(currentPlayerIndex);
+    
+        movePlayer(currentPlayer, roll);
+    
+        if (isPlayerSentToJail(currentPlayer)) {
+            return;
+        }
+    
+        BoardPosition currentSpace = getPlayerCurrentSpace(currentPlayer);
+        applySpaceEffect(currentPlayer, currentSpace);
+    }
+    
 
     private void movePlayer(Player player, int roll) {
         player.move(roll);
@@ -196,11 +221,14 @@ public class GameController {
     }
 
     private void endTurn() {
-        awaitingTurnEnd = false;
-        moveToNextPlayer();
-        view.getRollDiceButton().setEnabled(true);
-        view.getPassTurnButton().setEnabled(false);
+        awaitingTurnEnd = false; // Reseta o estado do turno
+        moveToNextPlayer();      // Muda para o próximo jogador
+        view.getRollDiceButton().setEnabled(true);  // Habilita rolar dados
+        view.getPassTurnButton().setEnabled(false); // Desativa passar turno
+        view.enableBuyPropertyButton(false);       // Garante que a compra seja desativada
+        displayCurrentPlayerTurn();                // Exibe o próximo jogador
     }
+    
 
     private void moveToNextPlayer() {
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();

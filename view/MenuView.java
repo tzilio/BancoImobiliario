@@ -24,7 +24,6 @@ public class MenuView extends JFrame {
 
     private final String[] colors = {"Vermelho", "Azul", "Verde", "Amarelo", "Branco", "Preto"};
     private final Color[] colorValues = {Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW, Color.WHITE, Color.BLACK};
-    private final String iconPath = "resources/peao.png";
     private final String backgroundPath = "resources/background_menu.jpg"; 
 
     // Conjunto para rastrear cores já selecionadas

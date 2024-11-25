@@ -2,21 +2,20 @@ package view;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.util.Random;
 
 public class DiceView extends JFrame {
     private DiceRollListener diceRollListener;
 
     public DiceView() {
-        super("Rolando Dois Dados");
+        super("Rolagem dos Dados");
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE); // Fecha a janela sem encerrar o programa
-        setPreferredSize(new Dimension(700, 700));
-        pack();
+        setPreferredSize(new Dimension(700, 700)); // Define o tamanho preferido
         setResizable(false);
-        setLocationRelativeTo(null);
 
         addGuiComponents();
+        pack(); // Ajusta o tamanho da janela aos componentes
+        setLocationRelativeTo(null); // Centraliza a janela na tela
     }
 
     // Interface para capturar o resultado dos dados
@@ -33,10 +32,11 @@ public class DiceView extends JFrame {
         jPanel.setLayout(null);
 
         // Dados
-        JLabel diceOneImg = new JLabel(new ImageIcon("resources/dice1.png"));        diceOneImg.setBounds(100, 200, 200, 200);
+        JLabel diceOneImg = new JLabel(new ImageIcon("resources/dices/dice1.png"));
+        diceOneImg.setBounds(100, 200, 200, 200);
         jPanel.add(diceOneImg);
 
-        JLabel diceTwoImg = new JLabel(new ImageIcon("resources/dice1.png"));
+        JLabel diceTwoImg = new JLabel(new ImageIcon("resources/dices/dice1.png"));
         diceTwoImg.setBounds(390, 200, 200, 200);
         jPanel.add(diceTwoImg);
 
@@ -44,6 +44,7 @@ public class DiceView extends JFrame {
         Random rand = new Random();
         JButton rollButton = new JButton("Roll!");
         rollButton.setBounds(250, 550, 200, 50);
+
         rollButton.addActionListener(e -> {
             rollButton.setEnabled(false); // Desativa o botão durante a rolagem
 
@@ -60,8 +61,8 @@ public class DiceView extends JFrame {
                         int diceTwo = rand.nextInt(6) + 1;
 
                         // Atualiza as imagens dos dados
-                        diceOneImg.setIcon(new ImageIcon("resources/dice" + diceOne + ".png"));
-                        diceTwoImg.setIcon(new ImageIcon("resources/dice" + diceTwo + ".png"));
+                        diceOneImg.setIcon(new ImageIcon("resources/dices/dice" + diceOne + ".png"));
+                        diceTwoImg.setIcon(new ImageIcon("resources/dices/dice" + diceTwo + ".png"));
                         repaint();
                         revalidate();
 
@@ -80,7 +81,18 @@ public class DiceView extends JFrame {
                         diceRollListener.onDiceRolled(finalDiceOne, finalDiceTwo);
                     }
 
-                    rollButton.setEnabled(true); // Reativa o botão após a rolagem
+                    // Troca o botão para "Fechar"
+                    SwingUtilities.invokeLater(() -> {
+                        // Remove todos os ActionListeners existentes
+                        for (var listener : rollButton.getActionListeners()) {
+                            rollButton.removeActionListener(listener);
+                        }
+
+                        // Atualiza o texto do botão e adiciona o ActionListener para fechar
+                        rollButton.setText("Fechar");
+                        rollButton.setEnabled(true);
+                        rollButton.addActionListener(closeEvent -> dispose());
+                    });
                 } catch (InterruptedException ex) {
                     System.err.println("Threading Error: " + ex.getMessage());
                 }
@@ -92,4 +104,5 @@ public class DiceView extends JFrame {
 
         this.getContentPane().add(jPanel);
     }
+
 }
