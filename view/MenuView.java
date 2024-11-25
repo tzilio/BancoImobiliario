@@ -1,28 +1,33 @@
 package view;
 
 import controller.GameController;
-import model.Bank;
 import model.Board;
 import model.Player;
-import model.SaveGameManager;
+import model.Bank;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class MenuView extends JFrame {
     private JComboBox<Integer> playerCountComboBox;
     private List<JTextField> playerNameFields = new ArrayList<>();
-    private List<JComboBox<String>> playerColorSelectors = new ArrayList<>();
+    private List<PlayerColorSelector> playerColorSelectors = new ArrayList<>();
     private JPanel playersPanel;
     private JButton startButton, loadButton, exitButton;
 
-    private final String[] colors = { "Azul", "Roxo", "Branco", "Preto"};
-    private final String iconPath = "path/to/image.png"; // Substitua pelo caminho correto da imagem
-    private final String backgroundPath = "view/assets/background_menu.jpg"; // Substitua pelo caminho correto da imagem de fundo
+    private final String[] colors = {"Vermelho", "Azul", "Verde", "Amarelo", "Branco", "Preto"};
+    private final Color[] colorValues = {Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW, Color.WHITE, Color.BLACK};
+    private final String iconPath = "resources/peao.png";
+    private final String backgroundPath = "resources/background_menu.jpg"; 
+
+    // Conjunto para rastrear cores já selecionadas
+    private Set<String> selectedColors = new HashSet<>();
 
     public MenuView() {
         setTitle("Configuração do Jogo - Banco Imobiliário");
@@ -41,8 +46,7 @@ public class MenuView extends JFrame {
         backgroundLabel.setBounds(0, 0, screenWidth, screenHeight);
 
         ImageIcon originalBackground = new ImageIcon(backgroundPath);
-        Image scaledBackground = originalBackground.getImage().getScaledInstance(screenWidth, screenHeight,
-                Image.SCALE_SMOOTH);
+        Image scaledBackground = originalBackground.getImage().getScaledInstance(screenWidth, screenHeight, Image.SCALE_SMOOTH);
         backgroundLabel.setIcon(new ImageIcon(scaledBackground));
         add(backgroundLabel);
 
@@ -66,7 +70,7 @@ public class MenuView extends JFrame {
         JLabel playerCountLabel = new JLabel("Quantidade de Jogadores: ");
         playerCountLabel.setForeground(Color.WHITE); // Texto branco
         playerCountLabel.setFont(new Font("Arial", Font.BOLD, 18)); // Fonte maior
-        playerCountComboBox = new JComboBox<>(new Integer[]{2, 3, 4});
+        playerCountComboBox = new JComboBox<>(new Integer[]{2, 3, 4, 5, 6});
         playerCountComboBox.setFont(new Font("Arial", Font.PLAIN, 18));
         playerCountComboBox.addActionListener(this::updatePlayerInputs);
         topPanel.add(playerCountLabel);
@@ -76,7 +80,7 @@ public class MenuView extends JFrame {
         // Painel central: Configurações dos jogadores
         playersPanel = new JPanel();
         playersPanel.setOpaque(false);
-        playersPanel.setLayout(new GridLayout(6, 3, 15, 15)); // Configurado para até 6 jogadores
+        playersPanel.setLayout(new GridLayout(6, 1, 15, 15)); // Configurado para até 6 jogadores
         configPanel.add(playersPanel);
 
         // Botões
@@ -114,23 +118,28 @@ public class MenuView extends JFrame {
         playersPanel.removeAll();
         playerNameFields.clear();
         playerColorSelectors.clear();
+        selectedColors.clear();
 
         int playerCount = (int) playerCountComboBox.getSelectedItem();
+
         for (int i = 0; i < playerCount; i++) {
+            JPanel playerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            playerPanel.setOpaque(false);
+
             // Nome do Jogador
             JTextField nameField = new JTextField("Jogador " + (i + 1));
             nameField.setFont(new Font("Arial", Font.PLAIN, 14));
             nameField.setPreferredSize(new Dimension(150, 30));
             nameField.setBorder(new LineBorder(Color.BLUE, 1, true));
             playerNameFields.add(nameField);
+            playerPanel.add(nameField);
 
-            // Cor do Peão
-            JComboBox<String> colorSelector = new JComboBox<>(colors);
-            colorSelector.setFont(new Font("Arial", Font.PLAIN, 14));
+            // Seletor de Cor
+            PlayerColorSelector colorSelector = new PlayerColorSelector(i);
             playerColorSelectors.add(colorSelector);
+            playerPanel.add(colorSelector.getPanel());
 
-            playersPanel.add(nameField);
-            playersPanel.add(colorSelector);
+            playersPanel.add(playerPanel);
         }
 
         playersPanel.revalidate();
@@ -140,59 +149,38 @@ public class MenuView extends JFrame {
     private void onStartGame() {
         int playerCount = (int) playerCountComboBox.getSelectedItem();
         List<Player> players = new ArrayList<>();
-
+    
         for (int i = 0; i < playerCount; i++) {
             String playerName = playerNameFields.get(i).getText();
-            String playerColor = (String) playerColorSelectors.get(i).getSelectedItem();
-            players.add(new Player(playerName, 1500, playerColor));
+            String playerColorName = playerColorSelectors.get(i).getSelectedColor();
+            if (playerColorName == null) {
+                JOptionPane.showMessageDialog(this, "Por favor, selecione uma cor para o " + playerName + "!");
+                return;
+            }
+    
+            // Adiciona o jogador diretamente com o nome da cor
+            players.add(new Player(playerName, 1500, playerColorName));
         }
-
+    
         // Configurar o tabuleiro e a interface do jogo
         Board board = Board.getInstance();
-
+    
         SwingUtilities.invokeLater(() -> {
-            GameView gameView = new GameView(board, players, Bank.getInstance());
+            GameView gameView = new GameView(board, players, null);
             gameView.setVisible(true);
-
+    
             GameController gameController = new GameController(players, gameView);
             gameController.startGame();
         });
-
+    
         setVisible(false); // Oculta o menu
-    }
+    }    
 
     private void onLoadGame() {
-        Object[] loadedData = SaveGameManager.loadGame("BANQUIMOBILHARIO_savegame.dat");
-        if (loadedData != null) {
-            Bank loadedBank = (Bank) loadedData[0];
-            @SuppressWarnings("unchecked")
-            List<Player> loadedPlayers = (List<Player>) loadedData[1];
-
-            System.out.println(loadedPlayers.get(0).getPosition());
-
-            Bank.setInstance(loadedBank);
-
-            Board board = Board.getInstance();
-            SwingUtilities.invokeLater(() -> {
-                GameView gameView = new GameView(board, loadedPlayers, loadedBank);
-                gameView.setVisible(true);
-
-                for (Player player : loadedPlayers) {
-                    gameView.getBoardView().updatePlayerPosition(player, player.getPosition());
-                }
-
-                gameView.updatePlayerInfo(loadedPlayers);
-
-                GameController gameController = new GameController(loadedPlayers, gameView);
-                gameController.startGame();
-            });
-
-            setVisible(false); // Oculta o menu principal
-        } else {
-            JOptionPane.showMessageDialog(this, "Erro ao carregar o jogo!");
-        }
+        JOptionPane.showMessageDialog(this, "Carregar Jogo ainda não implementado!");
     }
 
+    // Classe personalizada para botões arredondados
     private static class RoundedButton extends JButton {
         private final Color backgroundColor;
         private final int borderRadius;
@@ -205,6 +193,7 @@ public class MenuView extends JFrame {
             setFocusPainted(false);
             setForeground(Color.WHITE);
             setFont(new Font("Arial", Font.BOLD, 14));
+            setPreferredSize(new Dimension(200, 40));
         }
 
         @Override
@@ -228,6 +217,89 @@ public class MenuView extends JFrame {
             g2.setColor(backgroundColor.darker());
             g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, borderRadius, borderRadius);
             g2.dispose();
+        }
+    }
+
+    // Classe auxiliar para seleção de cores por jogador
+    private class PlayerColorSelector {
+        private int playerIndex;
+        private JPanel panel;
+        private String selectedColor = null;
+        private List<JButton> colorButtons = new ArrayList<>();
+
+        public PlayerColorSelector(int playerIndex) {
+            this.playerIndex = playerIndex;
+            panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
+            panel.setOpaque(false);
+
+            for (int i = 0; i < colors.length; i++) {
+                String colorName = colors[i];
+                Color colorValue = colorValues[i];
+                JButton colorButton = new JButton();
+                colorButton.setBackground(colorValue);
+                colorButton.setPreferredSize(new Dimension(30, 30));
+                colorButton.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+                colorButton.setOpaque(true);
+                colorButton.setToolTipText(colorName);
+                colorButton.addActionListener(e -> handleColorSelection(colorName, colorButton));
+                colorButtons.add(colorButton);
+                panel.add(colorButton);
+            }
+        }
+
+        public JPanel getPanel() {
+            return panel;
+        }
+
+        public String getSelectedColor() {
+            return selectedColor;
+        }
+
+        private void handleColorSelection(String colorName, JButton clickedButton) {
+            if (colorName.equals(selectedColor)) {
+                // Desseleciona a cor se o mesmo botão for clicado novamente
+                selectedColors.remove(colorName);
+                selectedColor = null;
+                clickedButton.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+            } else {
+                // Se já havia uma cor selecionada, removê-la das cores selecionadas
+                if (selectedColor != null) {
+                    selectedColors.remove(selectedColor);
+                }
+                selectedColor = colorName;
+                selectedColors.add(colorName);
+            }
+            updateAllColorButtons();
+        }
+
+        // Atualiza o estado dos botões de cor em todos os seletores
+        private void updateAllColorButtons() {
+            for (PlayerColorSelector selector : playerColorSelectors) {
+                for (JButton button : selector.colorButtons) {
+                    String btnColorName = getColorNameByButton(button);
+                    if (selectedColors.contains(btnColorName) && !btnColorName.equals(selector.selectedColor)) {
+                        button.setEnabled(false);
+                    } else {
+                        button.setEnabled(true);
+                    }
+
+                    // Atualiza a borda para indicar seleção
+                    if (btnColorName.equals(selector.selectedColor)) {
+                        button.setBorder(BorderFactory.createLineBorder(Color.WHITE, 3));
+                    } else {
+                        button.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+                    }
+                }
+            }
+        }
+
+        private String getColorNameByButton(JButton button) {
+            for (int i = 0; i < colorValues.length; i++) {
+                if (button.getBackground().equals(colorValues[i])) {
+                    return colors[i];
+                }
+            }
+            return null;
         }
     }
 }

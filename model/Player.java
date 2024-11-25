@@ -1,19 +1,33 @@
 package model;
 
-import java.io.Serializable;
+import java.awt.Color;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class Player implements Serializable {
+public class Player extends Observable {
     private String name;
     private int balance;
     private int position;
     private List<Property> properties;
     private boolean inJail;
-    private String color; // Cor do peão
+    private String color; // Cor representada como String
+    
+    // Lista de observadores
+    private List<Observer> observers = new ArrayList<>();
 
-    // Lista de observadores (transient, pois não deve ser serializada)
-    private transient List<Observer> observers;
+    // Mapa de cores pré-definidas (simula o antigo enum)
+    private static final Map<String, Color> COLOR_MAP = new HashMap<>();
+    static {
+        COLOR_MAP.put("Vermelho", new Color(220, 20, 60));
+        COLOR_MAP.put("Azul", new Color(30, 144, 255));
+        COLOR_MAP.put("Verde", new Color(34, 139, 34));
+        COLOR_MAP.put("Amarelo", new Color(255, 215, 0));
+        COLOR_MAP.put("Branco", Color.WHITE);
+        COLOR_MAP.put("Preto", Color.BLACK);
+        // Adicione mais cores conforme necessário
+    }
 
     // Construtor principal
     public Player(String name, int initialBalance, String color) {
@@ -22,7 +36,7 @@ public class Player implements Serializable {
         this.position = 0;
         this.properties = new ArrayList<>();
         this.inJail = false;
-        this.color = color;
+        setColor(color); // Valida e inicializa a cor do peão
         this.observers = new ArrayList<>();
     }
 
@@ -33,23 +47,16 @@ public class Player implements Serializable {
 
     // Métodos para gerenciar observadores
     public void addObserver(Observer observer) {
-        if (observers == null) { // Garantia caso observers seja null após desserialização
-            observers = new ArrayList<>();
-        }
         observers.add(observer);
     }
 
     public void removeObserver(Observer observer) {
-        if (observers != null) {
-            observers.remove(observer);
-        }
+        observers.remove(observer);
     }
 
     public void notifyObservers() {
-        if (observers != null) {
-            for (Observer observer : observers) {
-                observer.update();
-            }
+        for (Observer observer : observers) {
+            observer.update();
         }
     }
 
@@ -62,28 +69,23 @@ public class Player implements Serializable {
         return balance;
     }
 
-    public void setBalance(int balance) {
-        this.balance = balance;
-        notifyObservers();
+    public void setPosition(int position) {
+        this.position = position;
+        notifyObservers(); // Notifica os observadores ao atualizar a posição
+    }
+
+    public void updateBalance(int amount) {
+        this.balance += amount;
+        notifyObservers(); // Notifica os observadores ao atualizar o saldo
     }
 
     public int getPosition() {
         return position;
     }
 
-    public void setPosition(int position) {
-        this.position = position;
-        notifyObservers();
-    }
-
-    public void updateBalance(int amount) {
-        this.balance += amount;
-        notifyObservers();
-    }
-
     public void move(int steps) {
         this.position = (position + steps) % Board.BOARD_SIZE;
-        notifyObservers();
+        notifyObservers(); // Notifica os observadores ao mover o jogador
     }
 
     public List<Property> getProperties() {
@@ -92,7 +94,7 @@ public class Player implements Serializable {
 
     public void addProperty(Property property) {
         properties.add(property);
-        notifyObservers();
+        notifyObservers(); // Notifica os observadores ao adicionar uma propriedade
     }
 
     public boolean isInJail() {
@@ -101,7 +103,7 @@ public class Player implements Serializable {
 
     public void setInJail(boolean inJail) {
         this.inJail = inJail;
-        notifyObservers();
+        notifyObservers(); // Notifica os observadores ao atualizar o estado de prisão
     }
 
     public String getColor() {
@@ -109,13 +111,39 @@ public class Player implements Serializable {
     }
 
     public void setColor(String color) {
+        if (!COLOR_MAP.containsKey(color)) {
+            throw new IllegalArgumentException("Cor inválida: " + color);
+        }
         this.color = color;
-        notifyObservers();
+        notifyObservers(); // Notifica os observadores ao alterar a cor
     }
 
-    // Método para restaurar estado após desserialização
-    private Object readResolve() {
-        this.observers = new ArrayList<>();
-        return this;
+    public Color getColorAsAwtColor() {
+        if (COLOR_MAP.containsKey(color)) {
+            return COLOR_MAP.get(color);
+        }
+        throw new IllegalStateException("Cor não mapeada para: " + color);
+    }
+
+    // Método para validar se a cor é válida
+    public static boolean isValidColor(String color) {
+        return COLOR_MAP.containsKey(color);
+    }
+
+    // Método para obter todas as cores disponíveis
+    public static List<String> getAvailableColors() {
+        return new ArrayList<>(COLOR_MAP.keySet());
+    }
+
+    @Override
+    public String toString() {
+        return "Player{" +
+                "name='" + name + '\'' +
+                ", balance=" + balance +
+                ", position=" + position +
+                ", properties=" + properties +
+                ", inJail=" + inJail +
+                ", color='" + color + '\'' +
+                '}';
     }
 }

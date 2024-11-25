@@ -2,21 +2,19 @@ package view;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import model.Board;
 import model.BoardPosition;
 import model.Observer;
 import model.Player;
 
-public class BoardView extends JPanel implements Observer{
-    private Board board;
-    private Map<Integer, SpaceView> spaceViews;
-    private Map<Player, Integer> playerPositions;
-    private int boardSize;
-    private int borderPositions;
+public class BoardView extends JPanel implements Observer {
+    private final Board board;
+    private final Map<Integer, SpaceView> spaceViews;
+    private final Map<Player, Integer> playerPositions;
+    private final int boardSize;
+    private final int borderPositions;
 
     public BoardView(Board board, int boardSize, List<Player> players) {
         if (boardSize < 2) {
@@ -24,15 +22,21 @@ public class BoardView extends JPanel implements Observer{
         }
         this.board = board;
         this.boardSize = boardSize;
-        this.borderPositions = (4 * boardSize) - 4; // Calcula dinamicamente
+        this.borderPositions = (4 * boardSize) - 4;
         this.spaceViews = new HashMap<>();
         this.playerPositions = new HashMap<>();
 
         setLayout(new GridBagLayout());
+        setBackground(new Color(50, 150, 200)); // Fundo azul clássico
+        setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.BOTH;
 
         addSpacesToGrid(gbc);
+
+        // Painel central vazio
+        addCenterPanel();
 
         // Registra o BoardView como observador dos jogadores
         for (Player player : players) {
@@ -40,57 +44,29 @@ public class BoardView extends JPanel implements Observer{
         }
     }
 
-    public void updatePlayerTokens(List<Player> players) {
-        for (SpaceView space : spaceViews.values()) {
-            space.clearPlayerTokens();
-        }
-
-        for (Player player : players) {
-            int position = player.getPosition();
-            spaceViews.get(position).addPlayerToken(player);
-        }
-    }
-
     private void addSpacesToGrid(GridBagConstraints gbc) {
         int position = 0;
 
+        // Ajustando os tamanhos e mantendo a lógica de percorrer o perímetro
         for (int i = 0; i < boardSize; i++) {
             gbc.gridx = i;
             gbc.gridy = 0;
             addSpaceToGrid(position++, gbc);
         }
-
         for (int i = 1; i < boardSize - 1; i++) {
             gbc.gridx = boardSize - 1;
             gbc.gridy = i;
             addSpaceToGrid(position++, gbc);
         }
-
         for (int i = boardSize - 1; i >= 0; i--) {
             gbc.gridx = i;
             gbc.gridy = boardSize - 1;
             addSpaceToGrid(position++, gbc);
         }
-
         for (int i = boardSize - 2; i > 0; i--) {
             gbc.gridx = 0;
             gbc.gridy = i;
             addSpaceToGrid(position++, gbc);
-        }
-
-        for (int x = 1; x < boardSize - 1; x++) {
-            for (int y = 1; y < boardSize - 1; y++) {
-                gbc.gridx = x;
-                gbc.gridy = y;
-                JPanel centerPanel = new JPanel();
-                centerPanel.setBackground(Color.WHITE);
-                add(centerPanel, gbc);
-            }
-        }
-
-        for (int pos = 0; pos < borderPositions; pos++) {
-            if (!spaceViews.containsKey(pos)) 
-                System.err.println("Erro: Posição " + pos + " não foi adicionada ao spaceViews");
         }
     }
 
@@ -99,23 +75,34 @@ public class BoardView extends JPanel implements Observer{
         SpaceView spaceView = new SpaceView(boardPosition, position);
         spaceViews.put(position, spaceView);
 
+        // Configurar tamanhos dinâmicos com base na posição
         if (isCornerPosition(position)) {
-            spaceView.setPreferredSize(new Dimension(80, 80));
+            spaceView.setPreferredSize(new Dimension(150, 150)); // Quadrados nos cantos
+        } else if (isVerticalPosition(position)) {
+            spaceView.setPreferredSize(new Dimension(100, 150)); // Verticais
         } else {
-            if (isVerticalPosition(position)) {
-                spaceView.setPreferredSize(new Dimension(80, 60));
-            } else {
-                spaceView.setPreferredSize(new Dimension(60, 80));
-            }
+            spaceView.setPreferredSize(new Dimension(150, 100)); // Horizontais
         }
 
+        spaceView.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
         add(spaceView, gbc);
     }
 
+    private void addCenterPanel() {
+        JPanel centerPanel = new JPanel();
+        centerPanel.setOpaque(false); // Deixa transparente para o fundo azul ser visível
+        GridBagConstraints centerGbc = new GridBagConstraints();
+        centerGbc.gridx = boardSize / 2; // Centraliza horizontalmente
+        centerGbc.gridy = boardSize / 2; // Centraliza verticalmente
+        centerGbc.gridwidth = boardSize - 2; // Reduz o tamanho horizontal
+        centerGbc.gridheight = boardSize - 2; // Reduz o tamanho vertical
+        add(centerPanel, centerGbc);
+    }
+
     private boolean isCornerPosition(int position) {
-        return position == 0 || 
-               position == (boardSize - 1) || 
-               position == (2 * boardSize - 2) || 
+        return position == 0 ||
+               position == (boardSize - 1) ||
+               position == (2 * boardSize - 2) ||
                position == (3 * boardSize - 3);
     }
 
@@ -165,4 +152,14 @@ public class BoardView extends JPanel implements Observer{
         }
     }
 
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+        Color startColor = new Color(50, 150, 200);
+        Color endColor = new Color(200, 230, 250);
+        GradientPaint gradient = new GradientPaint(0, 0, startColor, getWidth(), getHeight(), endColor);
+        g2d.setPaint(gradient);
+        g2d.fillRect(0, 0, getWidth(), getHeight());
+    }
 }

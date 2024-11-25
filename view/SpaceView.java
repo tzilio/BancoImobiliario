@@ -62,7 +62,7 @@ public class SpaceView extends JPanel {
 
     public void addPlayerToken(Player player) {
         String colorName = player.getColor();
-        String imagePath = "view/assets/peoes/peao_" + colorName + ".png"; // Caminho baseado na cor
+        String imagePath = "resources/peoes/peao_" + colorName + ".png"; // Caminho baseado na cor
         ImageIcon icon = loadImage(imagePath);
     
         if (icon != null) {
