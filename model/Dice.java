@@ -13,19 +13,28 @@ public class Dice {
         random = new Random();
     }
 
-    public static Dice getInstance() {
-        if (instance == null) {
-            instance = new Dice();
-        }
-        return instance;
+    // Singleton com thread safety usando Holder
+    private static class DiceHolder {
+        private static final Dice INSTANCE = new Dice();
     }
 
+    public static Dice getInstance() {
+        return DiceHolder.INSTANCE;
+    }
+
+    // Método para rolar ambos os dados
     public int roll() {
         dice1 = random.nextInt(6) + 1;
         dice2 = random.nextInt(6) + 1;
-        return dice1 + dice2;
+        return getDiceSum();
     }
 
+    // Método para rolar apenas um dado
+    public int rollSingle() {
+        return random.nextInt(6) + 1;
+    }
+
+    // Verifica se os dois dados têm valores iguais
     public boolean isDouble() {
         return dice1 == dice2;
     }
@@ -39,6 +48,16 @@ public class Dice {
     }
 
     public int getDiceSum() {
-        return dice1+dice2;
+        return dice1 + dice2;
+    }
+
+    // Define uma semente para resultados reprodutíveis (útil para testes)
+    public void setSeed(long seed) {
+        random.setSeed(seed);
+    }
+
+    @Override
+    public String toString() {
+        return "Dice 1: " + dice1 + ", Dice 2: " + dice2 + ", Sum: " + getDiceSum();
     }
 }
