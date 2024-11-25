@@ -13,13 +13,10 @@ public class Dice {
         random = new Random();
     }
 
-    // Singleton com thread safety usando Holder
-    private static class DiceHolder {
-        private static final Dice INSTANCE = new Dice();
-    }
-
+    // Singleton
     public static Dice getInstance() {
-        return DiceHolder.INSTANCE;
+        if (instance == null) instance = new Dice();
+        return instance;
     }
 
     // Método para rolar ambos os dados

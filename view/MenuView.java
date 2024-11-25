@@ -250,13 +250,11 @@ public class MenuView extends JFrame {
 
     // Classe auxiliar para seleção de cores por jogador
     private class PlayerColorSelector {
-        private int playerIndex;
         private JPanel panel;
         private String selectedColor = null;
         private List<JButton> colorButtons = new ArrayList<>();
 
         public PlayerColorSelector(int playerIndex) {
-            this.playerIndex = playerIndex;
             panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
             panel.setOpaque(false);
 
