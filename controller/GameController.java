@@ -4,6 +4,7 @@ import model.*;
 import view.DiceView;
 import view.GameView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GameController {
@@ -27,6 +28,22 @@ public class GameController {
         setupRollDiceAction();
         setupBuyPropertyAction();
         setupPassTurnAction();
+        setupBuildHouseAction();
+    }
+
+    private void updateBuildableProperties() {
+        Player currentPlayer = players.get(currentPlayerIndex);
+        List<Property> buildableProperties = new ArrayList<>();
+
+        for (Property property : currentPlayer.getProperties()) {
+            ArrayList<Property> propertiesInCategory = board.getPropertiesInCategory(property.getCategory());
+            if (property.canBuildHouse(currentPlayer, propertiesInCategory)) {
+                buildableProperties.add(property);
+            }
+        }
+
+        // Atualiza o JComboBox na visão
+        view.updatePropertySelection(buildableProperties);
     }
 
     public void startGame() {
@@ -39,20 +56,19 @@ public class GameController {
             view.getBoardView().updatePlayerPosition(player, player.getPosition());
         }
     }
-    
 
     private void setupRollDiceAction() {
         view.getRollDiceButton().addActionListener(e -> {
             if (!awaitingTurnEnd) {
                 Dice dice = Dice.getInstance();
                 dice.roll();
-    
+
                 int dice1 = dice.getDice1();
                 int dice2 = dice.getDice2();
-    
+
                 view.displayDiceRoll(dice1, dice2);
                 processDiceResult(dice1, dice2);
-    
+
                 view.getRollDiceButton().setEnabled(false);
                 view.getPassTurnButton().setEnabled(true);
                 awaitingTurnEnd = true;
@@ -61,7 +77,24 @@ public class GameController {
             }
         });
     }
-        
+
+    private void setupBuildHouseAction() {
+        view.getBuildHouseButton().addActionListener(e -> {
+            Property selectedProperty = view.getSelectedProperty();
+            if (selectedProperty != null) {
+                Player currentPlayer = players.get(currentPlayerIndex);
+                ArrayList<Property> propertiesInCategory = board.getPropertiesInCategory(selectedProperty.getCategory());
+                selectedProperty.buildHouse(currentPlayer, propertiesInCategory);
+    
+                // Atualiza o JComboBox após a construção
+                updateBuildableProperties();
+            } else {
+                view.displayMessage("Selecione uma propriedade válida para construir.");
+            }
+        });
+    }
+    
+
     private void setupBuyPropertyAction() {
         view.getBuyPropertyButton().addActionListener(e -> buyProperty());
     }
@@ -79,7 +112,7 @@ public class GameController {
     private void nextTurn() {
         view.enableBuyPropertyButton(false);
         view.getRollDiceButton().setEnabled(false); // Desativa "Rolar Dados"
-        view.getPassTurnButton().setEnabled(true);  // Ativa "Passar Turno"
+        view.getPassTurnButton().setEnabled(true); // Ativa "Passar Turno"
         awaitingTurnEnd = true;
 
         Player currentPlayer = players.get(currentPlayerIndex);
@@ -121,17 +154,16 @@ public class GameController {
     private void processDiceResult(int dice1, int dice2) {
         int roll = dice1 + dice2; // Soma dos valores dos dados
         Player currentPlayer = players.get(currentPlayerIndex);
-    
+
         movePlayer(currentPlayer, roll);
-    
+
         if (isPlayerSentToJail(currentPlayer)) {
             return;
         }
-    
+
         BoardPosition currentSpace = getPlayerCurrentSpace(currentPlayer);
         applySpaceEffect(currentPlayer, currentSpace);
     }
-    
 
     private void movePlayer(Player player, int roll) {
         player.move(roll);
@@ -152,8 +184,13 @@ public class GameController {
     }
 
     private void applySpaceEffect(Player player, BoardPosition space) {
+        if (space instanceof NewsSpace) {
+            view.displayNewsPopup(((NewsSpace) space).getCard(player));
+            return;
+        }
+
         space.onLand(player);
-    
+
         if (space instanceof Property) {
             handleProperty((Property) space, player);
         } else if (space instanceof ShareSpace) {
@@ -162,30 +199,28 @@ public class GameController {
             view.displayMessage(player.getName() + " pagou o imposto!");
         } else if (space instanceof TaxReturn) {
             view.displayMessage(player.getName() + " recebeu um retorno de imposto!");
-        } else if (space instanceof NewsSpace) {
-            Deck deck = Deck.getInstance();
-            String newsMessage = deck.drawCard(player); // Obtém a mensagem do efeito
-            view.displayNewsPopup(newsMessage);        // Exibe o popup
-        }
-    }    
-    
+        } 
+    }
+
     private void handleProperty(Property property, Player player) {
         if (property.getOwner() == null) {
-            view.displayMessage(player.getName() + " pode comprar " + property.getName() + " por " + property.getPrice());
+            view.displayMessage(
+                    player.getName() + " pode comprar " + property.getName() + " por " + property.getPrice());
             view.enableBuyPropertyButton(true);
         } else if (property.getOwner().equals(player)) {
             view.displayMessage(player.getName() + " parou em sua própria propriedade " + property.getName());
         }
     }
-    
+
     private void handleShareSpace(ShareSpace shareSpace, Player player) {
         view.displayMessage(player.getName() + " parou em " + shareSpace.getName() + "!");
-    
+
         if (!shareSpace.isOwned()) {
-            view.displayMessage(player.getName() + " pode comprar " + shareSpace.getName() + " por " + shareSpace.getPrice());
+            view.displayMessage(
+                    player.getName() + " pode comprar " + shareSpace.getName() + " por " + shareSpace.getPrice());
             view.enableBuyPropertyButton(true); // Habilita o botão de compra
         }
-     }    
+    }
 
     private void buyProperty() {
         Player currentPlayer = players.get(currentPlayerIndex);
@@ -230,13 +265,12 @@ public class GameController {
 
     private void endTurn() {
         awaitingTurnEnd = false; // Reseta o estado do turno
-        moveToNextPlayer();      // Muda para o próximo jogador
-        view.getRollDiceButton().setEnabled(true);  // Habilita rolar dados
+        moveToNextPlayer(); // Muda para o próximo jogador
+        view.getRollDiceButton().setEnabled(true); // Habilita rolar dados
         view.getPassTurnButton().setEnabled(false); // Desativa passar turno
-        view.enableBuyPropertyButton(false);       // Garante que a compra seja desativada
-        displayCurrentPlayerTurn();                // Exibe o próximo jogador
+        view.enableBuyPropertyButton(false); // Garante que a compra seja desativada
+        displayCurrentPlayerTurn(); // Exibe o próximo jogador
     }
-    
 
     private void moveToNextPlayer() {
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
@@ -244,7 +278,9 @@ public class GameController {
     }
 
     private void displayCurrentPlayerTurn() {
-        view.displayPlayerTurn(players.get(currentPlayerIndex));
+        Player currentPlayer = players.get(currentPlayerIndex);
+        view.displayPlayerTurn(currentPlayer);
+        updateBuildableProperties(); // Atualiza as propriedades no JComboBox
     }
 
     private void handleJailTurn(Player player) {

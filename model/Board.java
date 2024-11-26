@@ -18,7 +18,7 @@ public class Board {
 
     private static Board instance;
 
-    private List<BoardPosition> positions;
+    private ArrayList<BoardPosition> positions;
     private Map<String, List<Property>> propertyCategories;
 
     // Posições específicas para espaços especiais
@@ -103,6 +103,19 @@ public class Board {
 
     public BoardPosition getSpace(int position) {
         return positions.get(position % BOARD_SIZE);
+    }
+
+    public ArrayList<Property> getPropertiesInCategory(String category) {
+        ArrayList<Property> properties = new ArrayList<>();
+        for (BoardPosition space : positions) {
+            if (space instanceof Property) {
+                Property property = (Property) space;
+                if (property.getCategory().equals(category)) {
+                    properties.add(property);
+                }
+            }
+        }
+        return properties;
     }
 
     public List<Property> getPropertiesByCategory(String category) {

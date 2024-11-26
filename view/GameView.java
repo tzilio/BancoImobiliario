@@ -130,14 +130,14 @@ public class GameView extends JFrame {
         dicePanel.add(diceTwoLabel);
 
         rollDiceButton.addActionListener(e -> {
-            rollDiceButton.setEnabled(false); 
+            rollDiceButton.setEnabled(false);
             Dice dice = Dice.getInstance();
 
             new Thread(() -> {
                 long startTime = System.currentTimeMillis();
                 Random rand = new Random();
 
-                while ((System.currentTimeMillis() - startTime) < 2000) { 
+                while ((System.currentTimeMillis() - startTime) < 2000) {
                     int animDice1 = rand.nextInt(6) + 1;
                     int animDice2 = rand.nextInt(6) + 1;
 
@@ -176,12 +176,11 @@ public class GameView extends JFrame {
 
     public void displayNewsPopup(String message) {
         JOptionPane.showMessageDialog(
-            this,
-            message,
-            "Sorte ou Revés",
-            JOptionPane.INFORMATION_MESSAGE
-        );
-    }    
+                this,
+                message,
+                "Sorte ou Revés",
+                JOptionPane.INFORMATION_MESSAGE);
+    }
 
     private void setupPlayerInfoPanel(List<Player> players) {
         playerInfoPanel = new JPanel();
@@ -237,8 +236,31 @@ public class GameView extends JFrame {
         buttonPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         buttonPanel.add(passTurnButton);
 
+        propertySelectionBox = new JComboBox<>();
+        propertySelectionBox.setEnabled(false); // Desativado inicialmente
+
+        buttonPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        buttonPanel.add(new JLabel("Selecione uma propriedade:"));
+        buttonPanel.add(propertySelectionBox);
+
         return buttonPanel;
     }
+
+    public void updatePropertySelection(List<Property> properties) {
+        propertySelectionBox.removeAllItems(); // Limpa os itens existentes
+        for (Property property : properties) {
+            propertySelectionBox.addItem(property);
+        }
+        propertySelectionBox.setEnabled(!properties.isEmpty()); // Habilita se houver opções
+    }
+    
+    public Property getSelectedProperty() {
+        return (Property) propertySelectionBox.getSelectedItem();
+    }    
+
+    public JButton getBuildHouseButton() {
+        return buildHouseButton;
+    }    
 
     private void openPauseMenu(List<Player> players, Bank bank) {
         pauseMenu.addResumeButtonListener(e -> pauseMenu.hideMenu());

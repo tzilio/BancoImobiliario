@@ -12,7 +12,7 @@ import java.util.List;
 public class SaveGameCreator {
     public static void main(String[] args) {
         // Criação manual dos jogadores
-        List<Player> players = new ArrayList<>();
+        ArrayList<Player> players = new ArrayList<>();
         Player player1 = new Player("Jogador 1", 1500, "Vermelho");
         Player player2 = new Player("Jogador 2", 1500, "Azul");
 
@@ -25,13 +25,23 @@ public class SaveGameCreator {
 
         // Instanciar o tabuleiro
         Board board = Board.getInstance();
-        List<Property> properties = board.getAllProperties();
+
+        // Exemplo de propriedades que serão atribuídas ao tabuleiro (ajustar conforme implementação)
+        List<Property> properties = board.getAllProperties(); // Supondo que este método retorna todas as propriedades do tabuleiro
 
         // Atribuir propriedades a um jogador
         for (Property property : properties) {
             if (property.getCategory().equals("Roxo")) { // Todas as propriedades da categoria "Roxo"
-                property.setOwner(player1);
+                property.setOwner(player1);             // Jogador 1 é dono das propriedades "Roxo"
                 player1.addProperty(property);
+            }
+        }
+
+        // Configurar uma propriedade com uma casa para testar
+        for (Property property : player1.getProperties()) {
+            if (property.getCategory().equals("Roxo")) {
+                property.buildHouse(player1, (ArrayList<Property>) board.getPropertiesInCategory(property.getCategory()));
+                break; // Constrói em apenas uma propriedade para o teste
             }
         }
 
@@ -41,7 +51,7 @@ public class SaveGameCreator {
         bank.payPlayer(player2, 300);   // Exemplo: Pagar 300 ao Jogador 2
 
         // Salvar o jogo
-        SaveGameManager.saveGame("BANQUIMOBILHARIO_savegame.dat", bank, players);
+        SaveGameManager.saveGame("teste_savegame.dat", bank, players);
 
         System.out.println("Savegame criado com sucesso!");
     }
