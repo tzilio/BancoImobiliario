@@ -9,10 +9,10 @@ public class Property extends BoardPosition {
     private int rent;
     private Player owner;
     private String category;
-    private int houses; 
+    private int houses;
     private boolean hasHotel; // Indica se a propriedade possui um hotel
-    private int housePrice; 
-    private int hotelPrice; 
+    private int housePrice;
+    private int hotelPrice;
 
     public Property(String name, int price, int rent, int position, String category, int housePrice) {
         super(position, name);
@@ -32,12 +32,12 @@ public class Property extends BoardPosition {
 
     public int getPrice() {
         return price;
-    }    
+    }
 
     public void setOwner(Player owner) {
         this.owner = owner;
     }
-    
+
     public int getRent() {
         if (hasHotel) {
             return rent * 5; // Aluguel com hotel é 5x maior
@@ -63,12 +63,44 @@ public class Property extends BoardPosition {
 
     public boolean canBuildHouse(Player player, ArrayList<Property> propertiesInCategory) {
         if (hasHotel) {
+            System.out.println("Já possui hotel: " + getName());
             return false; // Não pode construir casas se já houver um hotel
         }
-        return owner == player &&
-               propertiesInCategory.stream().allMatch(p -> p.getOwner() == player) && // Jogador possui todas as propriedades
-               propertiesInCategory.stream().allMatch(p -> p.houses <= this.houses); // Construção equilibrada
-    }
+    
+        // Total de propriedades na categoria
+        int totalPropertiesInCategory = propertiesInCategory.size();
+    
+        // Propriedades da categoria que o jogador possui
+        int ownedPropertiesInCategory = 0;
+        for (Property property : propertiesInCategory) {
+            if (player.equals(property.getOwner())) {
+                ownedPropertiesInCategory++;
+            } else {
+                System.out.println("Propriedade " + property.getName() + " pertence a " +
+                                   (property.getOwner() != null ? property.getOwner().getName() : "ninguém"));
+            }
+        }
+    
+        // Debug
+        System.out.println("Propriedades da categoria " + getCategory() + ": " + totalPropertiesInCategory);
+        System.out.println("Propriedades da categoria que o jogador possui: " + ownedPropertiesInCategory);
+    
+        if (ownedPropertiesInCategory < totalPropertiesInCategory) {
+            System.out.println("Jogador não possui todas as propriedades da categoria: " + getCategory());
+            return false;
+        }
+    
+        // Verifica o balanceamento da construção
+        boolean balanced = propertiesInCategory.stream()
+                .allMatch(p -> p.getHouses() <= this.getHouses());
+    
+        if (!balanced) {
+            System.out.println("Construção não está balanceada para a propriedade: " + getName());
+            return false;
+        }
+    
+        return true;
+    }     
 
     public void buildHouse(Player player, ArrayList<Property> propertiesInCategory) {
         if (canBuildHouse(player, propertiesInCategory) && player.getBalance() >= housePrice) {
@@ -82,9 +114,9 @@ public class Property extends BoardPosition {
 
     public boolean canBuildHotel(Player player, ArrayList<Property> propertiesInCategory) {
         return owner == player &&
-               houses == 4 && // A propriedade deve ter 4 casas
-               !hasHotel && // Não pode já ter um hotel
-               player.getBalance() >= hotelPrice; // Jogador tem saldo suficiente
+                houses == 4 && // A propriedade deve ter 4 casas
+                !hasHotel && // Não pode já ter um hotel
+                player.getBalance() >= hotelPrice; // Jogador tem saldo suficiente
     }
 
     public void buildHotel(Player player) {
@@ -114,7 +146,7 @@ public class Property extends BoardPosition {
 
     public boolean isOwned() {
         return owner != null;
-    }   
+    }
 
     public Player getOwner() {
         return owner;

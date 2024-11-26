@@ -37,14 +37,6 @@ public class SaveGameCreator {
             }
         }
 
-        // Configurar uma propriedade com uma casa para testar
-        for (Property property : player1.getProperties()) {
-            if (property.getCategory().equals("Roxo")) {
-                property.buildHouse(player1, (ArrayList<Property>) board.getPropertiesInCategory(property.getCategory()));
-                break; // Constrói em apenas uma propriedade para o teste
-            }
-        }
-
         // Criação do banco
         Bank bank = Bank.getInstance();
         bank.chargePlayer(player1, 500); // Exemplo: Cobrar 500 do Jogador 1

@@ -39,7 +39,12 @@ public class GameController {
             ArrayList<Property> propertiesInCategory = board.getPropertiesInCategory(property.getCategory());
             if (property.canBuildHouse(currentPlayer, propertiesInCategory)) {
                 buildableProperties.add(property);
+                System.out.println("Propriedade válida para construir: " + property.getName());
             }
+        }
+
+        if (buildableProperties.isEmpty()) {
+            System.out.println("Nenhuma propriedade disponível para construção.");
         }
 
         // Atualiza o JComboBox na visão
@@ -83,9 +88,12 @@ public class GameController {
             Property selectedProperty = view.getSelectedProperty();
             if (selectedProperty != null) {
                 Player currentPlayer = players.get(currentPlayerIndex);
-                ArrayList<Property> propertiesInCategory = board.getPropertiesInCategory(selectedProperty.getCategory());
+                ArrayList<Property> propertiesInCategory = board
+                        .getPropertiesInCategory(selectedProperty.getCategory());
+
+                System.out.println("Tentando construir em: " + selectedProperty.getName());
                 selectedProperty.buildHouse(currentPlayer, propertiesInCategory);
-    
+
                 // Atualiza o JComboBox após a construção
                 updateBuildableProperties();
             } else {
@@ -93,7 +101,6 @@ public class GameController {
             }
         });
     }
-    
 
     private void setupBuyPropertyAction() {
         view.getBuyPropertyButton().addActionListener(e -> buyProperty());
@@ -199,7 +206,7 @@ public class GameController {
             view.displayMessage(player.getName() + " pagou o imposto!");
         } else if (space instanceof TaxReturn) {
             view.displayMessage(player.getName() + " recebeu um retorno de imposto!");
-        } 
+        }
     }
 
     private void handleProperty(Property property, Player player) {

@@ -248,11 +248,19 @@ public class GameView extends JFrame {
 
     public void updatePropertySelection(List<Property> properties) {
         propertySelectionBox.removeAllItems(); // Limpa os itens existentes
+    
         for (Property property : properties) {
             propertySelectionBox.addItem(property);
+            System.out.println("Adicionada ao JComboBox: " + property.getName());
         }
+    
         propertySelectionBox.setEnabled(!properties.isEmpty()); // Habilita se houver opções
+    
+        if (properties.isEmpty()) {
+            System.out.println("JComboBox está vazio.");
+        }
     }
+    
     
     public Property getSelectedProperty() {
         return (Property) propertySelectionBox.getSelectedItem();
