@@ -2,6 +2,8 @@ package view;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import model.Player;
 import model.Board;
@@ -21,18 +23,17 @@ public class GameView extends JFrame {
     private JButton passTurnButton;
     private JPanel playerInfoContainer;
     private JButton pauseMenuButton;
+    private PauseMenuView pauseMenu;
 
     public GameView(Board board, List<Player> players, Bank bank) {
         setTitle("Banco Imobiliário");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // Configuração para iniciar em tela cheia
-        setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximiza a janela
-        setUndecorated(true); // Remove bordas e barra de título
+        pauseMenu = new PauseMenuView();
 
         setupHeader();
         setupMainLayout(board, players);
-        
+
         // Configuração do botão de menu
         pauseMenuButton.addActionListener(e -> openPauseMenu(players, bank));
     }
@@ -138,10 +139,8 @@ public class GameView extends JFrame {
     }
 
     private void openPauseMenu(List<Player> players, Bank bank) {
-        PauseMenuView pauseMenu = new PauseMenuView();
-
         pauseMenu.addResumeButtonListener(e -> pauseMenu.hideMenu());
-        pauseMenu.addSaveGameButtonListener(e -> handleSaveGame(players));
+        handleSaveGame(players);
         pauseMenu.addLoadGameButtonListener(e -> handleLoadGame(players, bank));
         pauseMenu.addExitButtonListener(e -> handleExitGame());
 
@@ -149,32 +148,84 @@ public class GameView extends JFrame {
     }
 
     private void handleSaveGame(List<Player> players) {
-        SaveGameManager.saveGame("BANQUIMOBILHARIO_savegame.dat", Bank.getInstance(), players);
-        displayMessage("Jogo salvo com sucesso!");
+        pauseMenu.addSaveGameButtonListener(fileName -> {
+            if (!fileName.endsWith("_savegame.dat")) {
+                fileName += "_savegame.dat";
+            }
+
+            try {
+                SaveGameManager.saveGame("savegames/" + fileName, Bank.getInstance(), players);
+                displayMessage("Jogo salvo com sucesso como: " + fileName);
+            } catch (Exception ex) {
+                displayMessage("Erro ao salvar o jogo: " + ex.getMessage());
+            }
+        });
     }
 
     private void handleLoadGame(List<Player> players, Bank bank) {
-        Object[] loadedData = SaveGameManager.loadGame("BANQUIMOBILHARIO_savegame.dat");
-        if (loadedData != null) {
-            updateGameState(loadedData, players, bank);
-            displayMessage("Jogo carregado com sucesso!");
+        File savegamesDir = new File("savegames");
+
+        File[] saveFiles = savegamesDir.listFiles((dir, name) -> name.endsWith("_savegame.dat"));
+
+        if (saveFiles == null || saveFiles.length == 0) {
+            displayMessage("Nenhum arquivo de salvamento encontrado.");
+            return;
+        }
+
+        String[] saveFileNames = Arrays.stream(saveFiles)
+                .map(file -> file.getName().replace("_savegame.dat", ""))
+                .toArray(String[]::new);
+
+        String selectedFile = (String) JOptionPane.showInputDialog(
+                this,
+                "Selecione o jogo salvo para carregar:",
+                "Carregar Jogo",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                saveFileNames,
+                saveFileNames[0]);
+
+        if (selectedFile != null) {
+            String fileNameWithExtension = selectedFile + "_savegame.dat";
+            Object[] loadedData = SaveGameManager.loadGame("savegames/" + fileNameWithExtension);
+            if (loadedData != null) {
+                updateGameState(loadedData, players, bank);
+                displayMessage("Jogo carregado com sucesso!");
+            } else {
+                displayMessage("Erro ao carregar o jogo.");
+            }
         } else {
-            displayMessage("Erro ao carregar o jogo.");
+            displayMessage("Nenhum jogo foi selecionado.");
         }
     }
 
     private void handleExitGame() {
-        int confirm = JOptionPane.showConfirmDialog(
-            this,
-            "Você tem certeza que deseja sair do jogo?",
-            "Confirmar Saída",
-            JOptionPane.YES_NO_OPTION
-        );
-
-        if (confirm == JOptionPane.YES_OPTION) {
-            System.exit(0);
+        String[] options = {"Menu Principal", "Sair do Jogo", "Cancelar"};
+        int choice = JOptionPane.showOptionDialog(
+                this,
+                "Você deseja sair para o menu principal ou encerrar o jogo?",
+                "Confirmar Saída",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[0]);
+    
+                if (choice == 0) { // "Menu Principal"
+                pauseMenu.hideMenu(); 
+                pauseMenu.dispose();
+        
+                this.setVisible(false);
+                this.dispose();
+        
+                SwingUtilities.invokeLater(() -> {
+                    MenuView menuView = new MenuView();
+                    menuView.setVisible(true);
+                });
+        } else if (choice == 1) { 
+            System.exit(0); 
         }
-    }
+    }    
 
     private void updateGameState(Object[] loadedData, List<Player> players, Bank bank) {
         Bank loadedBank = (Bank) loadedData[0];
@@ -198,18 +249,17 @@ public class GameView extends JFrame {
     public void updatePlayerInfo(List<Player> players) {
         // Remove todos os componentes atuais do painel de informações
         playerInfoPanel.removeAll();
-    
+
         // Adiciona as informações atualizadas de cada jogador
         for (Player player : players) {
             PlayerInfoView playerInfoView = new PlayerInfoView(player);
             playerInfoPanel.add(playerInfoView);
         }
-    
+
         // Atualiza o layout do painel
         playerInfoPanel.revalidate();
         playerInfoPanel.repaint();
     }
-    
 
     public void displayMessage(String message) {
         if (messageLabel != null) {

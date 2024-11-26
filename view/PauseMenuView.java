@@ -45,10 +45,21 @@ public class PauseMenuView extends JFrame {
         resumeButton.addActionListener(listener);
     }
 
-    public void addSaveGameButtonListener(ActionListener listener) {
-        saveGameButton.addActionListener(listener);
-    }
-
+    public void addSaveGameButtonListener(java.util.function.Consumer<String> onSaveGame) {
+        saveGameButton.addActionListener(e -> {
+            String fileName = JOptionPane.showInputDialog(
+                this,
+                "Digite o nome do arquivo para salvar:",
+                "Salvar Jogo",
+                JOptionPane.QUESTION_MESSAGE
+            );
+    
+            if (fileName != null && !fileName.trim().isEmpty()) {
+                onSaveGame.accept(fileName.trim());
+            }
+        });
+    }    
+    
     public void addLoadGameButtonListener(ActionListener listener) {
         loadGameButton.addActionListener(listener);
     }

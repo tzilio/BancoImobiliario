@@ -35,25 +35,26 @@ public class MenuView extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(Toolkit.getDefaultToolkit().getScreenSize());
         setLayout(null); // Usar posicionamento absoluto com JLayeredPane
-    
+
         // Dimensões da tela
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int screenWidth = screenSize.width;
         int screenHeight = screenSize.height;
-    
+
         // Criação do JLayeredPane
         JLayeredPane layeredPane = new JLayeredPane();
         layeredPane.setBounds(0, 0, screenWidth, screenHeight);
         add(layeredPane);
-    
+
         // Imagem de fundo
         JLabel backgroundLabel = new JLabel();
         backgroundLabel.setBounds(0, 0, screenWidth, screenHeight);
         ImageIcon originalBackground = new ImageIcon(backgroundPath);
-        Image scaledBackground = originalBackground.getImage().getScaledInstance(screenWidth, screenHeight, Image.SCALE_SMOOTH);
+        Image scaledBackground = originalBackground.getImage().getScaledInstance(screenWidth, screenHeight,
+                Image.SCALE_SMOOTH);
         backgroundLabel.setIcon(new ImageIcon(scaledBackground));
         layeredPane.add(backgroundLabel, JLayeredPane.DEFAULT_LAYER); // Adiciona no fundo
-    
+
         // Título
         JLabel titleLabel = new JLabel("BANCO IMOBILIÁRIO");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 48));
@@ -61,13 +62,13 @@ public class MenuView extends JFrame {
         titleLabel.setBounds(screenWidth / 2 - 300, 20, 600, 50); // Centralizado
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
         layeredPane.add(titleLabel, JLayeredPane.PALETTE_LAYER); // Adiciona acima do fundo
-    
+
         // Painel de configurações
         JPanel configPanel = new JPanel();
         configPanel.setLayout(new BoxLayout(configPanel, BoxLayout.Y_AXIS));
         configPanel.setOpaque(false); // Transparente
         configPanel.setBounds(screenWidth / 4, screenHeight / 8 + 50, screenWidth / 2, screenHeight / 2);
-    
+
         // Seleção de número de jogadores
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         topPanel.setOpaque(false);
@@ -80,36 +81,36 @@ public class MenuView extends JFrame {
         topPanel.add(playerCountLabel);
         topPanel.add(playerCountComboBox);
         configPanel.add(topPanel);
-    
+
         // Painel central: Configurações dos jogadores
         playersPanel = new JPanel();
         playersPanel.setOpaque(false);
         playersPanel.setLayout(new GridLayout(6, 1, 15, 15)); // Configurado para até 6 jogadores
         configPanel.add(playersPanel);
         layeredPane.add(configPanel, JLayeredPane.PALETTE_LAYER); // Adiciona acima do fundo
-    
+
         // Painel de botões
         JPanel buttonPanel = new JPanel(new GridLayout(3, 1, 10, 10));
         buttonPanel.setOpaque(false);
         buttonPanel.setBounds(screenWidth / 3, screenHeight - 250, screenWidth / 3, 150);
-    
+
         startButton = new RoundedButton("Iniciar Jogo", new Color(60, 179, 113), 20);
         startButton.addActionListener(e -> onStartGame());
         buttonPanel.add(startButton);
-    
+
         loadButton = new RoundedButton("Carregar Jogo", new Color(30, 144, 255), 20);
         loadButton.addActionListener(e -> onLoadGame());
         buttonPanel.add(loadButton);
-    
+
         exitButton = new RoundedButton("Sair", new Color(220, 20, 60), 20);
         exitButton.addActionListener(e -> System.exit(0));
         buttonPanel.add(exitButton);
-    
+
         layeredPane.add(buttonPanel, JLayeredPane.PALETTE_LAYER); // Adiciona acima do fundo
-    
+
         updatePlayerInputs(null); // Inicializa os campos
         setVisible(true);
-    }    
+    }
 
     private void updatePlayerInputs(ActionEvent e) {
         playersPanel.removeAll();
@@ -175,20 +176,20 @@ public class MenuView extends JFrame {
 
     private void onLoadGame() {
         File savegamesDir = new File("savegames");
-
+    
         if (savegamesDir.exists() && savegamesDir.isDirectory()) {
             File[] saveFiles = savegamesDir.listFiles((dir, name) -> name.endsWith("_savegame.dat"));
-
+    
             if (saveFiles == null || saveFiles.length == 0) {
                 JOptionPane.showMessageDialog(this, "Nenhum arquivo de savegame encontrado!");
                 return;
             }
-
+    
             String[] saveFileNames = new String[saveFiles.length];
             for (int i = 0; i < saveFiles.length; i++) {
-                saveFileNames[i] = saveFiles[i].getName();
+                saveFileNames[i] = saveFiles[i].getName().replace("_savegame.dat", "");
             }
-
+    
             String selectedFile = (String) JOptionPane.showInputDialog(
                     this,
                     "Selecione um savegame para carregar:",
@@ -197,45 +198,46 @@ public class MenuView extends JFrame {
                     null,
                     saveFileNames,
                     saveFileNames[0]);
-
+    
             if (selectedFile != null) {
-                File chosenSaveFile = new File(savegamesDir, selectedFile);
+                String fullFileName = selectedFile + "_savegame.dat";
+                File chosenSaveFile = new File(savegamesDir, fullFileName);
                 loadSelectedGame(chosenSaveFile);
             }
         } else {
             JOptionPane.showMessageDialog(this, "A pasta de savegames não foi encontrada!");
         }
     }
-
+    
     private void loadSelectedGame(File saveFile) {
         Object[] loadedData = SaveGameManager.loadGame(saveFile.getPath());
         if (loadedData != null) {
             Bank loadedBank = (Bank) loadedData[0];
             @SuppressWarnings("unchecked")
             List<Player> loadedPlayers = (List<Player>) loadedData[1];
-
+    
             Bank.setInstance(loadedBank);
-
+    
             Board board = Board.getInstance();
             SwingUtilities.invokeLater(() -> {
                 GameView gameView = new GameView(board, loadedPlayers, loadedBank);
                 gameView.setVisible(true);
-
+    
                 for (Player player : loadedPlayers) {
                     gameView.getBoardView().updatePlayerPosition(player, player.getPosition());
                 }
-
+    
                 gameView.updatePlayerInfo(loadedPlayers);
-
+    
                 GameController gameController = new GameController(loadedPlayers, gameView);
                 gameController.startGame();
             });
-
+    
             setVisible(false); // Oculta o menu principal
         } else {
             JOptionPane.showMessageDialog(this, "Erro ao carregar o jogo!");
         }
-    }
+    }    
 
     // Classe personalizada para botões arredondados
     private static class RoundedButton extends JButton {
