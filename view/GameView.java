@@ -136,11 +136,10 @@ public class GameView extends JFrame {
 
             new Thread(() -> {
                 long startTime = System.currentTimeMillis();
-                Random rand = new Random();
-
-                while ((System.currentTimeMillis() - startTime) < 2000) {
-                    int animDice1 = rand.nextInt(6) + 1;
-                    int animDice2 = rand.nextInt(6) + 1;
+                while ((System.currentTimeMillis() - startTime) < 1000) {
+                    Random rand = new Random();
+                    int animDice1 = rand.nextInt(5)+1;
+                    int animDice2 = rand.nextInt(5)+1;
 
                     SwingUtilities.invokeLater(() -> {
                         diceOneLabel.setIcon(new ImageIcon(new ImageIcon("resources/dices/dice" + animDice1 + ".png")
@@ -157,7 +156,6 @@ public class GameView extends JFrame {
                 }
 
                 SwingUtilities.invokeLater(() -> {
-                    dice.roll();
                     int dice1 = dice.getDice1();
                     int dice2 = dice.getDice2();
 
@@ -289,20 +287,19 @@ public class GameView extends JFrame {
 
     public void updatePropertySelection(List<Property> properties) {
         propertySelectionBox.removeAllItems(); // Limpa os itens existentes
-        
+
         for (Property property : properties) {
             propertySelectionBox.addItem(property);
         }
-        
+
         boolean hasProperties = !properties.isEmpty();
         propertySelectionBox.setEnabled(hasProperties); // Habilita o JComboBox se houver opções
         buildHouseButton.setEnabled(hasProperties); // Habilita o botão "Construir Casa" se houver propriedades
-    
+
         if (!hasProperties) {
             System.out.println("Nenhuma propriedade disponível para construção.");
         }
     }
-    
 
     public Property getSelectedProperty() {
         return (Property) propertySelectionBox.getSelectedItem();
