@@ -10,6 +10,7 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -22,9 +23,9 @@ public class MenuView extends JFrame {
     private JPanel playersPanel;
     private JButton startButton, loadButton, exitButton;
 
-    private final String[] colors = {"Vermelho", "Azul", "Verde", "Amarelo", "Branco", "Preto"};
-    private final Color[] colorValues = {Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW, Color.WHITE, Color.BLACK};
-    private final String backgroundPath = "resources/background_menu.jpg"; 
+    private final String[] colors = { "Vermelho", "Azul", "Verde", "Amarelo", "Branco", "Preto" };
+    private final Color[] colorValues = { Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW, Color.WHITE, Color.BLACK };
+    private final String backgroundPath = "resources/background_menu.jpg";
 
     // Conjunto para rastrear cores já selecionadas
     private Set<String> selectedColors = new HashSet<>();
@@ -32,87 +33,83 @@ public class MenuView extends JFrame {
     public MenuView() {
         setTitle("Configuração do Jogo - Banco Imobiliário");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setExtendedState(JFrame.MAXIMIZED_BOTH); // Tela cheia
-        setUndecorated(true); // Remove bordas
-        setLayout(null); // Posicionamento absoluto
-
+        setSize(Toolkit.getDefaultToolkit().getScreenSize());
+        setLayout(null); // Usar posicionamento absoluto com JLayeredPane
+    
         // Dimensões da tela
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int screenWidth = screenSize.width;
         int screenHeight = screenSize.height;
-
-        // Imagem de fundo dimensionada para 100% da tela
+    
+        // Criação do JLayeredPane
+        JLayeredPane layeredPane = new JLayeredPane();
+        layeredPane.setBounds(0, 0, screenWidth, screenHeight);
+        add(layeredPane);
+    
+        // Imagem de fundo
         JLabel backgroundLabel = new JLabel();
         backgroundLabel.setBounds(0, 0, screenWidth, screenHeight);
-
         ImageIcon originalBackground = new ImageIcon(backgroundPath);
         Image scaledBackground = originalBackground.getImage().getScaledInstance(screenWidth, screenHeight, Image.SCALE_SMOOTH);
         backgroundLabel.setIcon(new ImageIcon(scaledBackground));
-        add(backgroundLabel);
-
+        layeredPane.add(backgroundLabel, JLayeredPane.DEFAULT_LAYER); // Adiciona no fundo
+    
         // Título
         JLabel titleLabel = new JLabel("BANCO IMOBILIÁRIO");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 48));
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setBounds(screenWidth / 2 - 300, 20, 600, 50); // Centralizado
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        add(titleLabel);
-
-        // Painel principal transparente para configurações
+        layeredPane.add(titleLabel, JLayeredPane.PALETTE_LAYER); // Adiciona acima do fundo
+    
+        // Painel de configurações
         JPanel configPanel = new JPanel();
         configPanel.setLayout(new BoxLayout(configPanel, BoxLayout.Y_AXIS));
         configPanel.setOpaque(false); // Transparente
         configPanel.setBounds(screenWidth / 4, screenHeight / 8 + 50, screenWidth / 2, screenHeight / 2);
-
+    
         // Seleção de número de jogadores
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         topPanel.setOpaque(false);
         JLabel playerCountLabel = new JLabel("Quantidade de Jogadores: ");
         playerCountLabel.setForeground(Color.WHITE); // Texto branco
-        playerCountLabel.setFont(new Font("Arial", Font.BOLD, 18)); // Fonte maior
-        playerCountComboBox = new JComboBox<>(new Integer[]{2, 3, 4, 5, 6});
+        playerCountLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        playerCountComboBox = new JComboBox<>(new Integer[] { 2, 3, 4, 5, 6 });
         playerCountComboBox.setFont(new Font("Arial", Font.PLAIN, 18));
         playerCountComboBox.addActionListener(this::updatePlayerInputs);
         topPanel.add(playerCountLabel);
         topPanel.add(playerCountComboBox);
         configPanel.add(topPanel);
-
+    
         // Painel central: Configurações dos jogadores
         playersPanel = new JPanel();
         playersPanel.setOpaque(false);
         playersPanel.setLayout(new GridLayout(6, 1, 15, 15)); // Configurado para até 6 jogadores
         configPanel.add(playersPanel);
-
-        // Botões
-        JPanel buttonPanel = new JPanel();
+        layeredPane.add(configPanel, JLayeredPane.PALETTE_LAYER); // Adiciona acima do fundo
+    
+        // Painel de botões
+        JPanel buttonPanel = new JPanel(new GridLayout(3, 1, 10, 10));
         buttonPanel.setOpaque(false);
-        buttonPanel.setLayout(new GridLayout(3, 1, 10, 10)); // Botões em uma coluna com espaçamento
-        buttonPanel.setBounds(screenWidth / 3, screenHeight - 200, screenWidth / 3, 150); // Movidos para baixo
-
-        // Botão Iniciar Jogo
+        buttonPanel.setBounds(screenWidth / 3, screenHeight - 250, screenWidth / 3, 150);
+    
         startButton = new RoundedButton("Iniciar Jogo", new Color(60, 179, 113), 20);
         startButton.addActionListener(e -> onStartGame());
         buttonPanel.add(startButton);
-
-        // Botão Carregar Jogo
+    
         loadButton = new RoundedButton("Carregar Jogo", new Color(30, 144, 255), 20);
         loadButton.addActionListener(e -> onLoadGame());
         buttonPanel.add(loadButton);
-
-        // Botão Sair
+    
         exitButton = new RoundedButton("Sair", new Color(220, 20, 60), 20);
         exitButton.addActionListener(e -> System.exit(0));
         buttonPanel.add(exitButton);
-
-        add(buttonPanel);
-
-        // Adicionar o painel de configurações e o fundo
-        add(configPanel);
-        add(backgroundLabel);
-
+    
+        layeredPane.add(buttonPanel, JLayeredPane.PALETTE_LAYER); // Adiciona acima do fundo
+    
         updatePlayerInputs(null); // Inicializa os campos
         setVisible(true);
-    }
+    }    
 
     private void updatePlayerInputs(ActionEvent e) {
         playersPanel.removeAll();
@@ -149,7 +146,7 @@ public class MenuView extends JFrame {
     private void onStartGame() {
         int playerCount = (int) playerCountComboBox.getSelectedItem();
         List<Player> players = new ArrayList<>();
-    
+
         for (int i = 0; i < playerCount; i++) {
             String playerName = playerNameFields.get(i).getText();
             String playerColorName = playerColorSelectors.get(i).getSelectedColor();
@@ -157,33 +154,65 @@ public class MenuView extends JFrame {
                 JOptionPane.showMessageDialog(this, "Por favor, selecione uma cor para o " + playerName + "!");
                 return;
             }
-    
+
             // Adiciona o jogador diretamente com o nome da cor
             players.add(new Player(playerName, 1500, playerColorName));
         }
-    
+
         // Configurar o tabuleiro e a interface do jogo
         Board board = Board.getInstance();
-    
+
         SwingUtilities.invokeLater(() -> {
             GameView gameView = new GameView(board, players, null);
             gameView.setVisible(true);
-    
+
             GameController gameController = new GameController(players, gameView);
             gameController.startGame();
         });
-    
+
         setVisible(false); // Oculta o menu
-    }    
+    }
 
     private void onLoadGame() {
-        Object[] loadedData = SaveGameManager.loadGame("BANQUIMOBILHARIO_savegame.dat");
+        File savegamesDir = new File("savegames");
+
+        if (savegamesDir.exists() && savegamesDir.isDirectory()) {
+            File[] saveFiles = savegamesDir.listFiles((dir, name) -> name.endsWith("_savegame.dat"));
+
+            if (saveFiles == null || saveFiles.length == 0) {
+                JOptionPane.showMessageDialog(this, "Nenhum arquivo de savegame encontrado!");
+                return;
+            }
+
+            String[] saveFileNames = new String[saveFiles.length];
+            for (int i = 0; i < saveFiles.length; i++) {
+                saveFileNames[i] = saveFiles[i].getName();
+            }
+
+            String selectedFile = (String) JOptionPane.showInputDialog(
+                    this,
+                    "Selecione um savegame para carregar:",
+                    "Carregar Jogo",
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    saveFileNames,
+                    saveFileNames[0]);
+
+            if (selectedFile != null) {
+                File chosenSaveFile = new File(savegamesDir, selectedFile);
+                loadSelectedGame(chosenSaveFile);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "A pasta de savegames não foi encontrada!");
+        }
+    }
+
+    private void loadSelectedGame(File saveFile) {
+        Object[] loadedData = SaveGameManager.loadGame(saveFile.getPath());
         if (loadedData != null) {
             Bank loadedBank = (Bank) loadedData[0];
             @SuppressWarnings("unchecked")
             List<Player> loadedPlayers = (List<Player>) loadedData[1];
-
-            System.out.println(loadedPlayers.get(0).getPosition());
 
             Bank.setInstance(loadedBank);
 
