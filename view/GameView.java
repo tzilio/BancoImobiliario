@@ -29,6 +29,8 @@ public class GameView extends JFrame {
         setTitle("Banco Imobiliário");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+
         pauseMenu = new PauseMenuView();
 
         setupHeader();
