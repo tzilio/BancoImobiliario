@@ -8,7 +8,6 @@ public class BankController {
 
     public void givePassStartReward(Player player) {
         player.updateBalance(PASS_START_REWARD);
-        System.out.println(player.getName() + " recebeu " + PASS_START_REWARD + " por passar pelo ponto de partida!");
     }
 
     public void mortgageProperty(Player player, Property property) {

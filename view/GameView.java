@@ -3,6 +3,7 @@ package view;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -210,6 +211,18 @@ public class GameView extends JFrame {
         playerInfoContainer.add(playerInfoPanel, BorderLayout.CENTER);
     }
 
+    private transient java.util.List<java.util.function.Consumer<Integer>> movePlayerListeners = new ArrayList<>();
+
+    public void addMovePlayerListener(java.util.function.Consumer<Integer> listener) {
+        movePlayerListeners.add(listener);
+    }
+
+    private void fireMovePlayerEvent(int steps) {
+        for (var listener : movePlayerListeners) {
+            listener.accept(steps);
+        }
+    }
+
     private JPanel setupButtonPanel() {
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
@@ -227,6 +240,26 @@ public class GameView extends JFrame {
         propertySelectionBox = new JComboBox<>();
         propertySelectionBox.setEnabled(false);
 
+        // Campo e botão para mover manualmente o jogador
+        JTextField moveField = new JTextField();
+        JButton moveButton = new JButton("Mover");
+
+        moveField.setMaximumSize(new Dimension(200, 30)); // Define o tamanho do campo de texto
+        moveButton.setEnabled(true);
+
+        moveButton.addActionListener(e -> {
+            try {
+                int steps = Integer.parseInt(moveField.getText());
+                if (steps < 0) {
+                    displayMessage("O número de passos não pode ser negativo.");
+                    return;
+                }
+                fireMovePlayerEvent(steps); // Método para mover o jogador
+            } catch (NumberFormatException ex) {
+                displayMessage("Digite um número válido.");
+            }
+        });
+
         buttonPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         buttonPanel.add(rollDiceButton);
         buttonPanel.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -237,38 +270,47 @@ public class GameView extends JFrame {
         buttonPanel.add(passTurnButton);
 
         propertySelectionBox = new JComboBox<>();
-        propertySelectionBox.setEnabled(false); // Desativado inicialmente
+        propertySelectionBox.setMaximumSize(new Dimension(200, 30)); // Define o tamanho máximo
+        propertySelectionBox.setPreferredSize(new Dimension(200, 30)); // Define o tamanho preferido
+        propertySelectionBox.setEnabled(false);
 
         buttonPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         buttonPanel.add(new JLabel("Selecione uma propriedade:"));
         buttonPanel.add(propertySelectionBox);
+
+        buttonPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        buttonPanel.add(new JLabel("Mover Jogador (debug):"));
+        buttonPanel.add(moveField);
+        buttonPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        buttonPanel.add(moveButton);
 
         return buttonPanel;
     }
 
     public void updatePropertySelection(List<Property> properties) {
         propertySelectionBox.removeAllItems(); // Limpa os itens existentes
-    
+        
         for (Property property : properties) {
             propertySelectionBox.addItem(property);
-            System.out.println("Adicionada ao JComboBox: " + property.getName());
         }
+        
+        boolean hasProperties = !properties.isEmpty();
+        propertySelectionBox.setEnabled(hasProperties); // Habilita o JComboBox se houver opções
+        buildHouseButton.setEnabled(hasProperties); // Habilita o botão "Construir Casa" se houver propriedades
     
-        propertySelectionBox.setEnabled(!properties.isEmpty()); // Habilita se houver opções
-    
-        if (properties.isEmpty()) {
-            System.out.println("JComboBox está vazio.");
+        if (!hasProperties) {
+            System.out.println("Nenhuma propriedade disponível para construção.");
         }
     }
     
-    
+
     public Property getSelectedProperty() {
         return (Property) propertySelectionBox.getSelectedItem();
-    }    
+    }
 
     public JButton getBuildHouseButton() {
         return buildHouseButton;
-    }    
+    }
 
     private void openPauseMenu(List<Player> players, Bank bank) {
         pauseMenu.addResumeButtonListener(e -> pauseMenu.hideMenu());

@@ -11,6 +11,7 @@ public class SpaceView extends JPanel {
     private BoardPosition boardPosition;
     private int position;
     private JPanel playerTokensPanel;
+    private JPanel housePanel; // Painel para casas
 
     public SpaceView(BoardPosition boardPosition, int position) {
         this.boardPosition = boardPosition;
@@ -25,6 +26,11 @@ public class SpaceView extends JPanel {
         playerTokensPanel.setOpaque(false);
         playerTokensPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
         add(playerTokensPanel, BorderLayout.CENTER);
+
+        housePanel = new JPanel();
+        housePanel.setOpaque(false);
+        housePanel.setLayout(new FlowLayout(FlowLayout.LEFT, 2, 0)); // Espaço entre as casas
+        add(housePanel, BorderLayout.SOUTH); // Casas ficam na parte inferior
     }
 
     private void configureSpaceView() {
@@ -76,12 +82,49 @@ public class SpaceView extends JPanel {
             System.err.println("Imagem não encontrada: " + imagePath);
         }
     }
+
+    /* public void updateHouses(int houseCount) {
+        housePanel.removeAll(); // Remove casas anteriores
+        for (int i = 0; i < houseCount; i++) {
+            JLabel houseLabel = new JLabel(loadImage("resources/house.svg"));
+            if (houseLabel.getIcon() != null) {
+                housePanel.add(houseLabel); // Adiciona a casa ao painel
+            }
+        }
+        revalidate();
+        repaint();
+    } */
+
+    public void updateHouses(int houseCount, boolean hasHotel) {
+        System.out.println("Atualizando casas para " + boardPosition.getName() + ": " + 
+                           (hasHotel ? "Hotel" : houseCount + " casas"));
     
+        housePanel.removeAll(); 
+    
+        if (hasHotel) {
+            JLabel hotelLabel = new JLabel("H");
+            hotelLabel.setFont(new Font("Arial", Font.BOLD, 16)); 
+            hotelLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            housePanel.add(hotelLabel); 
+            System.out.println("Hotel adicionado ao painel.");
+        } else {
+            for (int i = 0; i < houseCount; i++) {
+                JLabel houseLabel = new JLabel("C");
+                houseLabel.setFont(new Font("Arial", Font.BOLD, 16)); 
+                houseLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                housePanel.add(houseLabel);
+                System.out.println("Casa adicionada ao painel de debug.");
+            }
+        }
+    
+        housePanel.revalidate(); // Atualiza o layout do painel
+        housePanel.repaint();    // Re-renderiza o painel
+    }    
 
     private ImageIcon loadImage(String path) {
         File imgFile = new File(path);
         if (imgFile.exists()) {
-            return new ImageIcon(path);
+            return new ImageIcon(new ImageIcon(path).getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH));
         } else {
             System.err.println("Erro: Caminho da imagem inválido - " + path);
             return null;

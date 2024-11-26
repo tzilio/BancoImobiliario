@@ -3,6 +3,7 @@ package controller;
 import model.*;
 import view.DiceView;
 import view.GameView;
+import view.SpaceView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,19 @@ public class GameController {
         setupBuyPropertyAction();
         setupPassTurnAction();
         setupBuildHouseAction();
+        setupManualMoveAction();
+
+    }
+
+    private void setupManualMoveAction() {
+        view.addMovePlayerListener(steps -> {
+            Player currentPlayer = players.get(currentPlayerIndex);
+            movePlayer(currentPlayer, steps);
+            BoardPosition currentSpace = board.getSpace(currentPlayer.getPosition());
+            applySpaceEffect(currentPlayer, currentSpace);
+            view.displayMessage(currentPlayer.getName() + " moveu " + steps + " casas para a posição "
+                    + currentPlayer.getPosition());
+        });
     }
 
     private void updateBuildableProperties() {
@@ -39,7 +53,6 @@ public class GameController {
             ArrayList<Property> propertiesInCategory = board.getPropertiesInCategory(property.getCategory());
             if (property.canBuildHouse(currentPlayer, propertiesInCategory)) {
                 buildableProperties.add(property);
-                System.out.println("Propriedade válida para construir: " + property.getName());
             }
         }
 
@@ -93,6 +106,11 @@ public class GameController {
 
                 System.out.println("Tentando construir em: " + selectedProperty.getName());
                 selectedProperty.buildHouse(currentPlayer, propertiesInCategory);
+
+                SpaceView spaceView = view.getBoardView().getSpaceView(selectedProperty.getPosition());
+                if (spaceView != null) {
+                    spaceView.updateHouses(selectedProperty.getHouses(), selectedProperty.hasHotel());
+                }
 
                 // Atualiza o JComboBox após a construção
                 updateBuildableProperties();

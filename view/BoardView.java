@@ -70,6 +70,10 @@ public class BoardView extends JPanel implements Observer {
         }
     }
 
+    public SpaceView getSpaceView(int position) {
+        return spaceViews.get(position); // Retorna a SpaceView para a posição dada
+    }    
+
     private void addSpaceToGrid(int position, GridBagConstraints gbc) {
         BoardPosition boardPosition = board.getSpace(position);
         SpaceView spaceView = new SpaceView(boardPosition, position);
