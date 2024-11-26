@@ -46,9 +46,9 @@ public class Deck {
         return true; //lista circular
     }
 
-    public void drawCard(Player player) {
+    public String drawCard(Player player) {
         Card card = next();
-        System.out.println(card.getDescription()); 
         card.applyEffect(player);
+        return card.getDescription();
     }
 }

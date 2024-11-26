@@ -174,6 +174,15 @@ public class GameView extends JFrame {
         return dicePanel;
     }
 
+    public void displayNewsPopup(String message) {
+        JOptionPane.showMessageDialog(
+            this,
+            message,
+            "Sorte ou Revés",
+            JOptionPane.INFORMATION_MESSAGE
+        );
+    }    
+
     private void setupPlayerInfoPanel(List<Player> players) {
         playerInfoPanel = new JPanel();
         playerInfoPanel.setLayout(new BoxLayout(playerInfoPanel, BoxLayout.Y_AXIS));

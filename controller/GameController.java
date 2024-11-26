@@ -163,9 +163,11 @@ public class GameController {
         } else if (space instanceof TaxReturn) {
             view.displayMessage(player.getName() + " recebeu um retorno de imposto!");
         } else if (space instanceof NewsSpace) {
-            view.displayMessage(player.getName() + " parou em Notícias!");
+            Deck deck = Deck.getInstance();
+            String newsMessage = deck.drawCard(player); // Obtém a mensagem do efeito
+            view.displayNewsPopup(newsMessage);        // Exibe o popup
         }
-    }
+    }    
     
     private void handleProperty(Property property, Player player) {
         if (property.getOwner() == null) {
