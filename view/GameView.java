@@ -5,8 +5,11 @@ import java.awt.*;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
+
 import model.Player;
 import model.Board;
+import model.Dice;
 import model.Property;
 import model.Bank;
 import model.SaveGameManager;
@@ -66,6 +69,10 @@ public class GameView extends JFrame {
         JPanel buttonPanel = setupButtonPanel();
         mainPanel.add(buttonPanel, BorderLayout.EAST);
 
+        // Adicionar o painel dos dados abaixo do tabuleiro
+        JPanel dicePanel = setupDicePanel();
+        mainPanel.add(dicePanel, BorderLayout.SOUTH);
+
         add(mainPanel, BorderLayout.CENTER);
     }
 
@@ -76,11 +83,102 @@ public class GameView extends JFrame {
         diceRollLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         diceRollLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
+        // Configuração para exibir os dados
+        JPanel dicePanel = new JPanel();
+        dicePanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+
+        JLabel diceOneLabel = new JLabel(new ImageIcon("resources/dices/dice1.png"));
+        JLabel diceTwoLabel = new JLabel(new ImageIcon("resources/dices/dice1.png"));
+        JButton rollDiceButton = new JButton("Rolar Dados");
+
+        dicePanel.add(diceOneLabel);
+        dicePanel.add(diceTwoLabel);
+        dicePanel.add(rollDiceButton);
+
+        // Ação do botão
+        rollDiceButton.addActionListener(e -> {
+            Dice dice = Dice.getInstance();
+            dice.roll();
+
+            int dice1 = dice.getDice1();
+            int dice2 = dice.getDice2();
+
+            diceOneLabel.setIcon(new ImageIcon("resources/dices/dice" + dice1 + ".png"));
+            diceTwoLabel.setIcon(new ImageIcon("resources/dices/dice" + dice2 + ".png"));
+
+            diceRollLabel.setText("Resultado dos Dados: " + dice1 + " e " + dice2);
+        });
+
         JPanel centerPanel = new JPanel(new BorderLayout());
         centerPanel.add(diceRollLabel, BorderLayout.NORTH);
         centerPanel.add(boardView, BorderLayout.CENTER);
+        centerPanel.add(dicePanel, BorderLayout.SOUTH);
 
         add(centerPanel, BorderLayout.CENTER);
+    }
+
+    private JPanel setupDicePanel() {
+        JPanel dicePanel = new JPanel();
+        dicePanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+
+        // Redimensiona as imagens dos dados
+        JLabel diceOneLabel = new JLabel(new ImageIcon(
+                new ImageIcon("resources/dices/dice1.png").getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
+        JLabel diceTwoLabel = new JLabel(new ImageIcon(
+                new ImageIcon("resources/dices/dice1.png").getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
+
+        // Adicionar os componentes ao painel
+        dicePanel.add(diceOneLabel);
+        dicePanel.add(diceTwoLabel);
+
+        // Configuração do botão principal
+        rollDiceButton.addActionListener(e -> {
+            rollDiceButton.setEnabled(false); // Desativa o botão durante a rolagem
+            Dice dice = Dice.getInstance();
+
+            // Thread para animar os dados
+            new Thread(() -> {
+                long startTime = System.currentTimeMillis();
+                Random rand = new Random();
+
+                while ((System.currentTimeMillis() - startTime) < 2000) { // 2 segundos de animação
+                    int animDice1 = rand.nextInt(6) + 1;
+                    int animDice2 = rand.nextInt(6) + 1;
+
+                    // Atualiza as imagens dos dados com números aleatórios
+                    SwingUtilities.invokeLater(() -> {
+                        diceOneLabel.setIcon(new ImageIcon(new ImageIcon("resources/dices/dice" + animDice1 + ".png")
+                                .getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
+                        diceTwoLabel.setIcon(new ImageIcon(new ImageIcon("resources/dices/dice" + animDice2 + ".png")
+                                .getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
+                    });
+
+                    try {
+                        Thread.sleep(60); // Intervalo entre animações
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+
+                // Finaliza com o resultado real dos dados
+                SwingUtilities.invokeLater(() -> {
+                    dice.roll();
+                    int dice1 = dice.getDice1();
+                    int dice2 = dice.getDice2();
+
+                    diceOneLabel.setIcon(new ImageIcon(new ImageIcon("resources/dices/dice" + dice1 + ".png").getImage()
+                            .getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
+                    diceTwoLabel.setIcon(new ImageIcon(new ImageIcon("resources/dices/dice" + dice2 + ".png").getImage()
+                            .getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
+
+                    // Atualiza o rótulo com o resultado final
+                    diceRollLabel.setText("Resultado dos Dados: " + dice1 + " e " + dice2);
+                    rollDiceButton.setEnabled(true); // Reativa o botão
+                });
+            }).start();
+        });
+
+        return dicePanel;
     }
 
     private void setupPlayerInfoPanel(List<Player> players) {
@@ -202,7 +300,7 @@ public class GameView extends JFrame {
     }
 
     private void handleExitGame() {
-        String[] options = {"Menu Principal", "Sair do Jogo", "Cancelar"};
+        String[] options = { "Menu Principal", "Sair do Jogo", "Cancelar" };
         int choice = JOptionPane.showOptionDialog(
                 this,
                 "Você deseja sair para o menu principal ou encerrar o jogo?",
@@ -212,22 +310,22 @@ public class GameView extends JFrame {
                 null,
                 options,
                 options[0]);
-    
-                if (choice == 0) { // "Menu Principal"
-                pauseMenu.hideMenu(); 
-                pauseMenu.dispose();
-        
-                this.setVisible(false);
-                this.dispose();
-        
-                SwingUtilities.invokeLater(() -> {
-                    MenuView menuView = new MenuView();
-                    menuView.setVisible(true);
-                });
-        } else if (choice == 1) { 
-            System.exit(0); 
+
+        if (choice == 0) { // "Menu Principal"
+            pauseMenu.hideMenu();
+            pauseMenu.dispose();
+
+            this.setVisible(false);
+            this.dispose();
+
+            SwingUtilities.invokeLater(() -> {
+                MenuView menuView = new MenuView();
+                menuView.setVisible(true);
+            });
+        } else if (choice == 1) {
+            System.exit(0);
         }
-    }    
+    }
 
     private void updateGameState(Object[] loadedData, List<Player> players, Bank bank) {
         Bank loadedBank = (Bank) loadedData[0];

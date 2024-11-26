@@ -44,18 +44,24 @@ public class GameController {
     private void setupRollDiceAction() {
         view.getRollDiceButton().addActionListener(e -> {
             if (!awaitingTurnEnd) {
-                rollDiceAndDisplay();
-                view.getRollDiceButton().setEnabled(false); // Desativa rolar após uso
-                view.getPassTurnButton().setEnabled(true);  // Habilita passar turno
+                Dice dice = Dice.getInstance();
+                dice.roll();
+    
+                int dice1 = dice.getDice1();
+                int dice2 = dice.getDice2();
+    
+                view.displayDiceRoll(dice1, dice2);
+                processDiceResult(dice1, dice2);
+    
+                view.getRollDiceButton().setEnabled(false);
+                view.getPassTurnButton().setEnabled(true);
                 awaitingTurnEnd = true;
             } else {
                 view.displayMessage("Você precisa encerrar o turno atual antes de jogar novamente!");
             }
         });
     }
-    
-    
-
+        
     private void setupBuyPropertyAction() {
         view.getBuyPropertyButton().addActionListener(e -> buyProperty());
     }
