@@ -121,31 +121,26 @@ public class GameView extends JFrame {
         JPanel dicePanel = new JPanel();
         dicePanel.setLayout(new FlowLayout(FlowLayout.CENTER));
 
-        // Redimensiona as imagens dos dados
         JLabel diceOneLabel = new JLabel(new ImageIcon(
                 new ImageIcon("resources/dices/dice1.png").getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
         JLabel diceTwoLabel = new JLabel(new ImageIcon(
                 new ImageIcon("resources/dices/dice1.png").getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
 
-        // Adicionar os componentes ao painel
         dicePanel.add(diceOneLabel);
         dicePanel.add(diceTwoLabel);
 
-        // Configuração do botão principal
         rollDiceButton.addActionListener(e -> {
-            rollDiceButton.setEnabled(false); // Desativa o botão durante a rolagem
+            rollDiceButton.setEnabled(false); 
             Dice dice = Dice.getInstance();
 
-            // Thread para animar os dados
             new Thread(() -> {
                 long startTime = System.currentTimeMillis();
                 Random rand = new Random();
 
-                while ((System.currentTimeMillis() - startTime) < 2000) { // 2 segundos de animação
+                while ((System.currentTimeMillis() - startTime) < 2000) { 
                     int animDice1 = rand.nextInt(6) + 1;
                     int animDice2 = rand.nextInt(6) + 1;
 
-                    // Atualiza as imagens dos dados com números aleatórios
                     SwingUtilities.invokeLater(() -> {
                         diceOneLabel.setIcon(new ImageIcon(new ImageIcon("resources/dices/dice" + animDice1 + ".png")
                                 .getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
@@ -160,7 +155,6 @@ public class GameView extends JFrame {
                     }
                 }
 
-                // Finaliza com o resultado real dos dados
                 SwingUtilities.invokeLater(() -> {
                     dice.roll();
                     int dice1 = dice.getDice1();
@@ -171,9 +165,8 @@ public class GameView extends JFrame {
                     diceTwoLabel.setIcon(new ImageIcon(new ImageIcon("resources/dices/dice" + dice2 + ".png").getImage()
                             .getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
 
-                    // Atualiza o rótulo com o resultado final
                     diceRollLabel.setText("Resultado dos Dados: " + dice1 + " e " + dice2);
-                    rollDiceButton.setEnabled(true); // Reativa o botão
+                    rollDiceButton.setEnabled(true);
                 });
             }).start();
         });
