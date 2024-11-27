@@ -23,7 +23,6 @@ public class GameView extends JFrame {
     private JButton rollDiceButton;
     private JButton buyPropertyButton;
     private JButton buildHouseButton;
-    private JComboBox<Property> propertySelectionBox;
     private BoardView boardView;
     private JPanel playerInfoPanel;
     private JButton passTurnButton;
@@ -242,9 +241,6 @@ public class GameView extends JFrame {
         buildHouseButton.setEnabled(false);
         passTurnButton.setEnabled(false);
 
-        propertySelectionBox = new JComboBox<>();
-        propertySelectionBox.setEnabled(false);
-
         // Campo e botão para mover manualmente o jogador
         JTextField moveField = new JTextField();
         JButton moveButton = new JButton("Mover");
@@ -274,15 +270,6 @@ public class GameView extends JFrame {
         buttonPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         buttonPanel.add(passTurnButton);
 
-        propertySelectionBox = new JComboBox<>();
-        propertySelectionBox.setMaximumSize(new Dimension(200, 30)); // Define o tamanho máximo
-        propertySelectionBox.setPreferredSize(new Dimension(200, 30)); // Define o tamanho preferido
-        propertySelectionBox.setEnabled(false);
-
-        buttonPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        buttonPanel.add(new JLabel("Selecione uma propriedade:"));
-        buttonPanel.add(propertySelectionBox);
-
         buttonPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         buttonPanel.add(new JLabel("Mover Jogador (debug):"));
         buttonPanel.add(moveField);
@@ -290,26 +277,6 @@ public class GameView extends JFrame {
         buttonPanel.add(moveButton);
 
         return buttonPanel;
-    }
-
-    public void updatePropertySelection(List<Property> properties) {
-        propertySelectionBox.removeAllItems(); // Limpa os itens existentes
-
-        for (Property property : properties) {
-            propertySelectionBox.addItem(property);
-        }
-
-        boolean hasProperties = !properties.isEmpty();
-        propertySelectionBox.setEnabled(hasProperties); // Habilita o JComboBox se houver opções
-        buildHouseButton.setEnabled(hasProperties); // Habilita o botão "Construir Casa" se houver propriedades
-
-        if (!hasProperties) {
-            System.out.println("Nenhuma propriedade disponível para construção.");
-        }
-    }
-
-    public Property getSelectedProperty() {
-        return (Property) propertySelectionBox.getSelectedItem();
     }
 
     public JButton getBuildHouseButton() {

@@ -30,7 +30,6 @@ public class GameController {
         setupRollDiceAction();
         setupBuyPropertyAction();
         setupPassTurnAction();
-        setupBuildHouseAction();
         setupManualMoveAction();
         setupSellPropertyAction();
         setupMortgagePropertyAction();
@@ -61,9 +60,6 @@ public class GameController {
         if (buildableProperties.isEmpty()) {
             System.out.println("Nenhuma propriedade disponível para construção.");
         }
-
-        // Atualiza o JComboBox na visão
-        view.updatePropertySelection(buildableProperties);
     }
 
     public void startGame() {
@@ -98,29 +94,6 @@ public class GameController {
         });
     }
 
-    private void setupBuildHouseAction() {
-        view.getBuildHouseButton().addActionListener(e -> {
-            Property selectedProperty = view.getSelectedProperty();
-            if (selectedProperty != null) {
-                Player currentPlayer = players.get(currentPlayerIndex);
-                ArrayList<Property> propertiesInCategory = board
-                        .getPropertiesInCategory(selectedProperty.getCategory());
-
-                System.out.println("Tentando construir em: " + selectedProperty.getName());
-                selectedProperty.buildHouse(currentPlayer, propertiesInCategory);
-
-                SpaceView spaceView = view.getBoardView().getSpaceView(selectedProperty.getPosition());
-                if (spaceView != null) {
-                    spaceView.updateHouses(selectedProperty.getHouses(), selectedProperty.hasHotel());
-                }
-
-                // Atualiza o JComboBox após a construção
-                updateBuildableProperties();
-            } else {
-                view.displayMessage("Selecione uma propriedade válida para construir.");
-            }
-        });
-    }
 
     private void setupBuyPropertyAction() {
         view.getBuyPropertyButton().addActionListener(e -> buyProperty());
