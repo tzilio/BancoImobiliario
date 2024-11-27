@@ -8,6 +8,8 @@ import view.SpaceView;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.SwingUtilities;
+
 public class GameController {
     private List<Player> players;
     private Board board;
@@ -76,22 +78,39 @@ public class GameController {
         view.getRollDiceButton().addActionListener(e -> {
             if (!awaitingTurnEnd) {
                 Dice dice = Dice.getInstance();
-                dice.roll();
-
-                int dice1 = dice.getDice1();
-                int dice2 = dice.getDice2();
-
-                view.displayDiceRoll(dice1, dice2);
-                processDiceResult(dice1, dice2);
-
+                
+                // Desativa o botão de rolagem para evitar múltiplos cliques
                 view.getRollDiceButton().setEnabled(false);
-                view.getPassTurnButton().setEnabled(true);
-                awaitingTurnEnd = true;
+    
+                // Inicia uma nova Thread para a rolagem com delay para animação
+                new Thread(() -> {
+                    dice.roll();
+    
+                    int dice1 = dice.getDice1();
+                    int dice2 = dice.getDice2();
+    
+                    // Atualiza a UI após um pequeno delay para simular a animação
+                    SwingUtilities.invokeLater(() -> view.displayDiceRoll(dice1, dice2));
+    
+                    try {
+                        Thread.sleep(1000); // Aguarda 1 segundo para simular o término da rolagem
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    }
+    
+                    // Move o jogador após a rolagem ser finalizada
+                    SwingUtilities.invokeLater(() -> {
+                        processDiceResult(dice1, dice2);
+                        view.getPassTurnButton().setEnabled(true); // Ativa o botão de passar turno
+                        awaitingTurnEnd = true;
+                    });
+                }).start();
             } else {
                 view.displayMessage("Você precisa encerrar o turno atual antes de jogar novamente!");
             }
         });
     }
+    
 
 
     private void setupBuyPropertyAction() {
@@ -172,30 +191,38 @@ public class GameController {
     }
 
     private void processDiceResult(int dice1, int dice2) {
-
         Player currentPlayer = players.get(currentPlayerIndex);
-
         if (isPlayerInJail(currentPlayer)) {
-            System.out.println(currentPlayer.getName() + " está preso. O turno foi tratado por handleJailTurn.");
-            return; // Se o jogador está na prisão, o turno é tratado em handleJailTurn
+            return; // Caso o jogador esteja preso, o movimento será tratado de forma diferente
         }
-
-        int roll = dice1 + dice2; // Soma dos valores dos dados
+    
+        int roll = dice1 + dice2;
         movePlayer(currentPlayer, roll);
+    }
+    
 
-        if (isPlayerSentToJail(currentPlayer)) {
-            return;
-        }
-
-        BoardPosition currentSpace = getPlayerCurrentSpace(currentPlayer);
-        applySpaceEffect(currentPlayer, currentSpace);
+    public void movePlayer(Player player, int steps) {
+        new Thread(() -> {
+            for (int i = 0; i < steps; i++) {
+                try {
+                    Thread.sleep(500); // Pausa de 500ms entre cada movimento
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+                SwingUtilities.invokeLater(() -> {
+                    player.setPosition((player.getPosition() + 1) % Board.BOARD_SIZE);
+                    view.getBoardView().updatePlayerPosition(player, player.getPosition());
+                });
+            }
+            SwingUtilities.invokeLater(() -> {
+                BoardPosition currentSpace = board.getSpace(player.getPosition());
+                applySpaceEffect(player, currentSpace);
+                view.displayMessage(player.getName() + " chegou à posição " + player.getPosition());
+            });
+        }).start();
     }
 
-    private void movePlayer(Player player, int roll) {
-        player.move(roll);
-        view.getBoardView().updatePlayerPosition(player, player.getPosition());
-        view.displayMessage(player.getName() + " rolou " + roll + " e se moveu para a posição " + player.getPosition());
-    }
 
     private boolean isPlayerSentToJail(Player player) {
         if (player.getPosition() == board.getGoToJailPosition()) {

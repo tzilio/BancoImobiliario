@@ -15,5 +15,5 @@ public class NewsSpace extends BoardPosition {
     public void onLand(Player player) {
         Deck deck = Deck.getInstance();
         deck.drawCard(player);
-    }
+    }  
 }
