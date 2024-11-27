@@ -5,6 +5,7 @@ import model.Board;
 import model.Player;
 import model.Bank;
 import model.SaveGameManager;
+import model.Property;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -216,19 +217,36 @@ public class MenuView extends JFrame {
             @SuppressWarnings("unchecked")
             List<Player> loadedPlayers = (List<Player>) loadedData[1];
     
+            // Atualiza a instância do banco
             Bank.setInstance(loadedBank);
     
+            // Obtém a instância do tabuleiro
             Board board = Board.getInstance();
+    
             SwingUtilities.invokeLater(() -> {
+                // Cria a nova visão do jogo
                 GameView gameView = new GameView(board, loadedPlayers, loadedBank);
                 gameView.setVisible(true);
     
+                // Atualiza as posições dos jogadores no tabuleiro
                 for (Player player : loadedPlayers) {
                     gameView.getBoardView().updatePlayerPosition(player, player.getPosition());
+    
+                    // Atualiza as casas e hotéis das propriedades do jogador
+                    for (Property property : player.getProperties()) {
+                        SpaceView spaceView = gameView.getBoardView().getSpaceView(property.getPosition());
+                        if (spaceView != null) {
+                            spaceView.updateHouses(property.getHouses(), property.hasHotel());
+                        } else {
+                            System.err.println("SpaceView não encontrado para a posição: " + property.getPosition());
+                        }
+                    }
                 }
     
+                // Atualiza as informações dos jogadores na interface
                 gameView.updatePlayerInfo(loadedPlayers);
     
+                // Cria o controlador do jogo e inicia o jogo
                 GameController gameController = new GameController(loadedPlayers, gameView);
                 gameController.startGame();
             });
