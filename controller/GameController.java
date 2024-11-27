@@ -1,7 +1,6 @@
 package controller;
 
 import model.*;
-import view.DiceView;
 import view.GameView;
 import view.PlayerInfoView;
 import view.SpaceView;
@@ -155,8 +154,6 @@ public class GameController {
             return;
         }
 
-        rollDiceAndDisplay();
-
         if (isPlayerSentToJail(currentPlayer)) {
             return;
         }
@@ -172,17 +169,6 @@ public class GameController {
             return true;
         }
         return false;
-    }
-
-    private void rollDiceAndDisplay() {
-        DiceView diceView = new DiceView();
-
-        diceView.addDiceRollListener((dice1, dice2) -> {
-            view.displayDiceRoll((dice1), dice2);
-            processDiceResult(dice1, dice2);
-        });
-
-        diceView.setVisible(true);
     }
 
     private void processDiceResult(int dice1, int dice2) {
