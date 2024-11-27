@@ -6,15 +6,24 @@ import java.util.List;
 public class SaveGameManager {
 
     public static void saveGame(String fileName, Bank bank, List<Player> players) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileName))) {
-            oos.writeObject(bank);   // Salva o estado do Banco
-            oos.writeObject(players); // Salva a lista de jogadores
-            System.out.println("Jogo salvo com sucesso em " + fileName);
+        try {
+            File file = new File(fileName);
+            File parentDir = file.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                parentDir.mkdirs(); 
+            }
+    
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
+                oos.writeObject(bank);  
+                oos.writeObject(players); 
+                System.out.println("Jogo salvo com sucesso em " + fileName);
+            }
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("Erro ao salvar o jogo.");
         }
     }
+    
 
     public static Object[] loadGame(String fileName) {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileName))) {
