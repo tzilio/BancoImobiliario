@@ -37,12 +37,15 @@ public class BankController {
         if (property.getOwner() == player) {
             int sellPrice = property.getPrice() / 2;
             player.updateBalance(sellPrice);
-            property.setOwner(null);
+            player.removeProperty(property); // Remove a propriedade do jogador
+            property.setOwner(null); // Desassocia a propriedade de qualquer dono
+    
             System.out.println(player.getName() + " vendeu a propriedade " + property.getName() + " ao banco por " + sellPrice);
         } else {
             System.out.println("A propriedade " + property.getName() + " não pertence a " + player.getName());
         }
     }
+    
     
 
     public void chargeFee(Player player, int amount) {

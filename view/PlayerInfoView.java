@@ -9,6 +9,7 @@ import java.util.List;
 
 import model.Player;
 import model.Property;
+import model.Bank;
 import model.Observer;
 
 public class PlayerInfoView extends JPanel implements Observer {
@@ -73,18 +74,19 @@ public class PlayerInfoView extends JPanel implements Observer {
     
     
     private void updatePropertiesPanel() {
-        propertiesPanel.removeAll(); // Limpa propriedades anteriores
-        for (Property property : player.getProperties()) {
+        propertiesPanel.removeAll(); // Limpa as propriedades anteriores
+    
+        for (Property property : player.getProperties()) { // Atualiza com a lista atual do jogador
             JPanel propertyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             JLabel propertyLabel = new JLabel(property.getName());
     
             JButton mortgageButton = new JButton("Hipotecar");
             mortgageButton.addActionListener(e -> fireMortgagePropertyEvent(property));
-            mortgageButton.setEnabled(isCurrentPlayer); // Botão habilitado apenas se for o jogador da vez
+            mortgageButton.setEnabled(isCurrentPlayer && !Bank.getInstance().isMortgaged(property));
     
             JButton sellButton = new JButton("Vender");
             sellButton.addActionListener(e -> fireSellPropertyEvent(property));
-            sellButton.setEnabled(isCurrentPlayer); // Botão habilitado apenas se for o jogador da vez
+            sellButton.setEnabled(isCurrentPlayer && !Bank.getInstance().isMortgaged(property));
     
             propertyPanel.add(propertyLabel);
             propertyPanel.add(mortgageButton);
@@ -92,9 +94,11 @@ public class PlayerInfoView extends JPanel implements Observer {
     
             propertiesPanel.add(propertyPanel);
         }
+    
         propertiesPanel.revalidate();
         propertiesPanel.repaint();
     }
+    
     
 
     public void setCurrentPlayer(boolean isCurrentPlayer) {
@@ -115,16 +119,19 @@ public class PlayerInfoView extends JPanel implements Observer {
     }
 
     private void fireMortgagePropertyEvent(Property property) {
+        System.out.println("Evento hipotecar disparado para: " + property.getName());
         for (var listener : mortgageListeners) {
             listener.accept(property);
         }
     }
-
+    
     private void fireSellPropertyEvent(Property property) {
+        System.out.println("Evento vender disparado para: " + property.getName());
         for (var listener : sellListeners) {
             listener.accept(property);
         }
     }
+    
 
     @Override
     public void update() {

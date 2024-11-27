@@ -3,6 +3,7 @@ package controller;
 import model.*;
 import view.DiceView;
 import view.GameView;
+import view.PlayerInfoView;
 import view.SpaceView;
 
 import java.util.ArrayList;
@@ -31,7 +32,8 @@ public class GameController {
         setupPassTurnAction();
         setupBuildHouseAction();
         setupManualMoveAction();
-
+        setupSellPropertyAction();
+        setupMortgagePropertyAction();
     }
 
     private void setupManualMoveAction() {
@@ -122,6 +124,40 @@ public class GameController {
 
     private void setupBuyPropertyAction() {
         view.getBuyPropertyButton().addActionListener(e -> buyProperty());
+    }
+
+
+    private void setupSellPropertyAction() {
+        for (Player player : players) {
+            PlayerInfoView infoView = view.getPlayerInfoView(player);
+            if (infoView != null) {
+                infoView.addSellListener(property -> sellProperty(player, property));
+            }
+        }
+    }
+
+    private void sellProperty(Player player, Property property) {
+        BankController bankController = new BankController();
+        bankController.sellPropertyToBank(player, property);
+
+        player.removeProperty(property);
+        view.updatePlayerInfo(players); // Atualiza a interface gráfica
+    }
+
+    private void setupMortgagePropertyAction() {
+        for (Player player : players) {
+            PlayerInfoView infoView = view.getPlayerInfoView(player);
+            if (infoView != null) {
+                infoView.addMortgageListener(property -> mortgageProperty(player, property));
+            }
+        }
+    }
+    
+    
+    private void mortgageProperty(Player player, Property property) {
+        BankController bankController = new BankController();
+        bankController.mortgageProperty(player, property);
+        view.updatePlayerInfo(players); // Atualiza a interface gráfica
     }
 
     private void setupPassTurnAction() {
@@ -310,10 +346,17 @@ public class GameController {
 
     private void displayCurrentPlayerTurn() {
         Player currentPlayer = players.get(currentPlayerIndex);
+    
+        // Atualiza o estado de cada PlayerInfoView
+        for (Player player : players) {
+            PlayerInfoView infoView = view.getPlayerInfoView(player);
+            infoView.setCurrentPlayer(player == currentPlayer);
+        }
+    
         view.displayPlayerTurn(currentPlayer);
-        updateBuildableProperties(); // Atualiza as propriedades no JComboBox
+        updateBuildableProperties();
     }
-
+    
     private void handleJailTurn(Player player) {
         view.displayMessage(player.getName() + " está na prisão.");
         dice.roll();

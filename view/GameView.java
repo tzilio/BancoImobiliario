@@ -5,7 +5,9 @@ import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import model.Player;
@@ -28,6 +30,9 @@ public class GameView extends JFrame {
     private JPanel playerInfoContainer;
     private JButton pauseMenuButton;
     private PauseMenuView pauseMenu;
+
+    private Map<Player, PlayerInfoView> playerInfoViews = new HashMap<>();
+
 
     public GameView(Board board, List<Player> players, Bank bank) {
         setTitle("Banco Imobiliário");
@@ -188,8 +193,10 @@ public class GameView extends JFrame {
 
         for (Player player : players) {
             PlayerInfoView playerInfoView = new PlayerInfoView(player);
+            playerInfoViews.put(player, playerInfoView);
             playerInfoPanel.add(playerInfoView);
         }
+        
 
         JButton togglePlayerInfoButton = new JButton("⮟ Mostrar Jogadores");
         togglePlayerInfoButton.addActionListener(e -> {
@@ -418,19 +425,18 @@ public class GameView extends JFrame {
     }
 
     public void updatePlayerInfo(List<Player> players) {
-        // Remove todos os componentes atuais do painel de informações
         playerInfoPanel.removeAll();
-
-        // Adiciona as informações atualizadas de cada jogador
+    
         for (Player player : players) {
-            PlayerInfoView playerInfoView = new PlayerInfoView(player);
+            PlayerInfoView playerInfoView = getPlayerInfoView(player);
+            playerInfoView.update(); // Atualiza os detalhes de cada jogador
             playerInfoPanel.add(playerInfoView);
         }
-
-        // Atualiza o layout do painel
+    
         playerInfoPanel.revalidate();
         playerInfoPanel.repaint();
     }
+    
 
     public void displayMessage(String message) {
         if (messageLabel != null) {
@@ -472,6 +478,10 @@ public class GameView extends JFrame {
 
     public JPanel getPlayerInfoPanel() {
         return playerInfoPanel;
+    }
+
+    public PlayerInfoView getPlayerInfoView(Player player) {
+        return playerInfoViews.get(player);
     }
     
 }
