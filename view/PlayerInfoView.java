@@ -10,6 +10,7 @@ import java.util.List;
 import model.Player;
 import model.Property;
 import model.Bank;
+import model.Board;
 import model.Observer;
 
 public class PlayerInfoView extends JPanel implements Observer {
@@ -79,6 +80,12 @@ public class PlayerInfoView extends JPanel implements Observer {
         for (Property property : player.getProperties()) { // Atualiza com a lista atual do jogador
             JPanel propertyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             JLabel propertyLabel = new JLabel(property.getName());
+
+            Board board = Board.getInstance();
+
+            JButton buildHouseButton = new JButton("Construir casa");
+            buildHouseButton.addActionListener(e -> property.buildHouse(player, board.getPropertiesInCategory(property.getCategory())));
+            buildHouseButton.setEnabled(isCurrentPlayer && !Bank.getInstance().isMortgaged(property) && property.canBuildHouse(player, board.getPropertiesInCategory(property.getCategory())));
     
             JButton mortgageButton = new JButton("Hipotecar");
             mortgageButton.addActionListener(e -> fireMortgagePropertyEvent(property));
@@ -89,6 +96,7 @@ public class PlayerInfoView extends JPanel implements Observer {
             sellButton.setEnabled(isCurrentPlayer && !Bank.getInstance().isMortgaged(property));
     
             propertyPanel.add(propertyLabel);
+            propertyPanel.add(buildHouseButton);
             propertyPanel.add(mortgageButton);
             propertyPanel.add(sellButton);
     
