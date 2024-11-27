@@ -2,19 +2,26 @@ package view;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+
 import model.Player;
+import model.Property;
 import model.Observer;
 
 public class PlayerInfoView extends JPanel implements Observer {
     private JLabel nameLabel;
     private JLabel balanceLabel;
-    private JLabel propertiesLabel;
+    private JPanel propertiesPanel;
+
     private Player player;
 
     // Mapa de cores para jogadores (nome da cor como chave)
     private static final Map<String, Color> playerColors = new HashMap<>();
+
+    private boolean isCurrentPlayer;
 
     static {
         playerColors.put("Vermelho", new Color(220, 20, 60));
@@ -29,42 +36,100 @@ public class PlayerInfoView extends JPanel implements Observer {
     public PlayerInfoView(Player player) {
         this.player = player;
         this.player.addObserver(this); // Registra-se como observador
-
+    
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        setPreferredSize(new Dimension(300, 100));
-        setMaximumSize(new Dimension(300, 100));
+        setPreferredSize(new Dimension(300, 200)); // Altura ajustada para mais propriedades
+        setMaximumSize(new Dimension(300, 200));
         setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
         setBackground(getColorFromPlayer());
-
+    
         // Inicialização dos Labels
         nameLabel = new JLabel("Jogador: " + player.getName());
         nameLabel.setFont(new Font("Arial", Font.BOLD, 16));
         nameLabel.setForeground(contrastColor(getColorFromPlayer()));
         nameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-
+    
         balanceLabel = new JLabel("Saldo: R$" + player.getBalance());
         balanceLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         balanceLabel.setForeground(contrastColor(getColorFromPlayer()));
         balanceLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        propertiesLabel = new JLabel("Propriedades: " + player.getProperties().size());
-        propertiesLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-        propertiesLabel.setForeground(contrastColor(getColorFromPlayer()));
-        propertiesLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        // Adicionando componentes com espaçamento
+    
+        // Adicionando componentes
         add(Box.createRigidArea(new Dimension(0, 10)));
         add(nameLabel);
         add(Box.createRigidArea(new Dimension(0, 5)));
         add(balanceLabel);
         add(Box.createRigidArea(new Dimension(0, 5)));
-        add(propertiesLabel);
+    
+        setupPropertiesPanel();
+    }
+
+    private void setupPropertiesPanel() {
+        propertiesPanel = new JPanel();
+        propertiesPanel.setLayout(new BoxLayout(propertiesPanel, BoxLayout.Y_AXIS));
+        JScrollPane scrollPane = new JScrollPane(propertiesPanel); // Crie o JScrollPane uma vez
+        add(scrollPane); // Adicione ao painel principal
+    }
+    
+    
+    private void updatePropertiesPanel() {
+        propertiesPanel.removeAll(); // Limpa propriedades anteriores
+        for (Property property : player.getProperties()) {
+            JPanel propertyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            JLabel propertyLabel = new JLabel(property.getName());
+    
+            JButton mortgageButton = new JButton("Hipotecar");
+            mortgageButton.addActionListener(e -> fireMortgagePropertyEvent(property));
+            mortgageButton.setEnabled(isCurrentPlayer); // Botão habilitado apenas se for o jogador da vez
+    
+            JButton sellButton = new JButton("Vender");
+            sellButton.addActionListener(e -> fireSellPropertyEvent(property));
+            sellButton.setEnabled(isCurrentPlayer); // Botão habilitado apenas se for o jogador da vez
+    
+            propertyPanel.add(propertyLabel);
+            propertyPanel.add(mortgageButton);
+            propertyPanel.add(sellButton);
+    
+            propertiesPanel.add(propertyPanel);
+        }
+        propertiesPanel.revalidate();
+        propertiesPanel.repaint();
+    }
+    
+
+    public void setCurrentPlayer(boolean isCurrentPlayer) {
+        this.isCurrentPlayer = isCurrentPlayer;
+        updatePropertiesPanel(); // Atualiza a exibição ao alterar o estado
+    }
+
+    // Eventos para hipotecar e vender propriedades
+    private transient List<java.util.function.Consumer<Property>> mortgageListeners = new ArrayList<>();
+    private transient List<java.util.function.Consumer<Property>> sellListeners = new ArrayList<>();
+
+    public void addMortgageListener(java.util.function.Consumer<Property> listener) {
+        mortgageListeners.add(listener);
+    }
+
+    public void addSellListener(java.util.function.Consumer<Property> listener) {
+        sellListeners.add(listener);
+    }
+
+    private void fireMortgagePropertyEvent(Property property) {
+        for (var listener : mortgageListeners) {
+            listener.accept(property);
+        }
+    }
+
+    private void fireSellPropertyEvent(Property property) {
+        for (var listener : sellListeners) {
+            listener.accept(property);
+        }
     }
 
     @Override
     public void update() {
         balanceLabel.setText("Saldo: R$" + player.getBalance());
-        propertiesLabel.setText("Propriedades: " + player.getProperties().size());
+        updatePropertiesPanel();
     }
 
     // Método auxiliar para obter a cor do jogador

@@ -469,4 +469,9 @@ public class GameView extends JFrame {
             messageLabel.setText("É a vez de " + player.getName());
         }
     }
+
+    public JPanel getPlayerInfoPanel() {
+        return playerInfoPanel;
+    }
+    
 }

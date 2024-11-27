@@ -118,4 +118,9 @@ public class Player implements Serializable {
         this.observers = new ArrayList<>();
         return this;
     }
+
+    public void removeProperty(Property property) {
+        properties.remove(property);
+        notifyObservers();
+    }    
 }

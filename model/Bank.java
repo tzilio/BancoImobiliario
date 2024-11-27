@@ -74,6 +74,10 @@ public class Bank implements Serializable {
         return mortgagedProperties.getOrDefault(property, false);
     }
 
+    public boolean canTradeProperty(Player player, Property property) {
+        return property.getOwner() == player && !isMortgaged(property);
+    }
+    
     public int getTotalMoney() {
         return totalMoney;
     }
