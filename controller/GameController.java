@@ -177,9 +177,15 @@ public class GameController {
     }
 
     private void processDiceResult(int dice1, int dice2) {
-        int roll = dice1 + dice2; // Soma dos valores dos dados
+
         Player currentPlayer = players.get(currentPlayerIndex);
 
+        if (isPlayerInJail(currentPlayer)) {
+            System.out.println(currentPlayer.getName() + " está preso. O turno foi tratado por handleJailTurn.");
+            return; // Se o jogador está na prisão, o turno é tratado em handleJailTurn
+        }
+
+        int roll = dice1 + dice2; // Soma dos valores dos dados
         movePlayer(currentPlayer, roll);
 
         if (isPlayerSentToJail(currentPlayer)) {
@@ -319,6 +325,7 @@ public class GameController {
             nextTurn();
         } else {
             view.displayMessage(player.getName() + " não conseguiu sair da prisão.");
+            endTurn();
         }
     }
 
