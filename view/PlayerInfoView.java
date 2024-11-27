@@ -38,31 +38,31 @@ public class PlayerInfoView extends JPanel implements Observer {
     public PlayerInfoView(Player player) {
         this.player = player;
         this.player.addObserver(this); // Registra-se como observador
-    
+
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setPreferredSize(new Dimension(300, 200)); // Altura ajustada para mais propriedades
         setMaximumSize(new Dimension(300, 200));
         setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
         setBackground(getColorFromPlayer());
-    
+
         // Inicialização dos Labels
         nameLabel = new JLabel("Jogador: " + player.getName());
         nameLabel.setFont(new Font("Arial", Font.BOLD, 16));
         nameLabel.setForeground(contrastColor(getColorFromPlayer()));
         nameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-    
+
         balanceLabel = new JLabel("Saldo: R$" + player.getBalance());
         balanceLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         balanceLabel.setForeground(contrastColor(getColorFromPlayer()));
         balanceLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-    
+
         // Adicionando componentes
         add(Box.createRigidArea(new Dimension(0, 10)));
         add(nameLabel);
         add(Box.createRigidArea(new Dimension(0, 5)));
         add(balanceLabel);
         add(Box.createRigidArea(new Dimension(0, 5)));
-    
+
         setupPropertiesPanel();
     }
 
@@ -72,11 +72,10 @@ public class PlayerInfoView extends JPanel implements Observer {
         JScrollPane scrollPane = new JScrollPane(propertiesPanel); // Crie o JScrollPane uma vez
         add(scrollPane); // Adicione ao painel principal
     }
-    
-    
+
     private void updatePropertiesPanel() {
         propertiesPanel.removeAll(); // Limpa as propriedades anteriores
-    
+
         for (Property property : player.getProperties()) { // Atualiza com a lista atual do jogador
             JPanel propertyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             JLabel propertyLabel = new JLabel(property.getName());
@@ -84,30 +83,39 @@ public class PlayerInfoView extends JPanel implements Observer {
             Board board = Board.getInstance();
 
             JButton buildHouseButton = new JButton("Construir casa");
-            buildHouseButton.addActionListener(e -> property.buildHouse(player, board.getPropertiesInCategory(property.getCategory())));
-            buildHouseButton.setEnabled(isCurrentPlayer && !Bank.getInstance().isMortgaged(property) && property.canBuildHouse(player, board.getPropertiesInCategory(property.getCategory())));
-    
+            buildHouseButton.addActionListener(e -> {
+                property.buildHouse(player, board.getPropertiesInCategory(property.getCategory()));
+            
+                GameView gameView = (GameView) SwingUtilities.getWindowAncestor(this); 
+                if (gameView != null) {
+                    SpaceView spaceView = gameView.getBoardView().getSpaceView(property.getPosition());
+                    if (spaceView != null) {
+                        spaceView.updateHouses(property.getHouses(), property.hasHotel());
+                    }
+                }
+            });            
+            buildHouseButton.setEnabled(isCurrentPlayer && !Bank.getInstance().isMortgaged(property)
+                    && property.canBuildHouse(player, board.getPropertiesInCategory(property.getCategory())));
+
             JButton mortgageButton = new JButton("Hipotecar");
             mortgageButton.addActionListener(e -> fireMortgagePropertyEvent(property));
             mortgageButton.setEnabled(isCurrentPlayer && !Bank.getInstance().isMortgaged(property));
-    
+
             JButton sellButton = new JButton("Vender");
             sellButton.addActionListener(e -> fireSellPropertyEvent(property));
             sellButton.setEnabled(isCurrentPlayer && !Bank.getInstance().isMortgaged(property));
-    
+
             propertyPanel.add(propertyLabel);
             propertyPanel.add(buildHouseButton);
             propertyPanel.add(mortgageButton);
             propertyPanel.add(sellButton);
-    
+
             propertiesPanel.add(propertyPanel);
         }
-    
+
         propertiesPanel.revalidate();
         propertiesPanel.repaint();
     }
-    
-    
 
     public void setCurrentPlayer(boolean isCurrentPlayer) {
         this.isCurrentPlayer = isCurrentPlayer;
@@ -132,14 +140,13 @@ public class PlayerInfoView extends JPanel implements Observer {
             listener.accept(property);
         }
     }
-    
+
     private void fireSellPropertyEvent(Property property) {
         System.out.println("Evento vender disparado para: " + property.getName());
         for (var listener : sellListeners) {
             listener.accept(property);
         }
     }
-    
 
     @Override
     public void update() {
