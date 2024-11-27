@@ -120,6 +120,25 @@ public class BoardView extends JPanel implements Observer {
             System.err.println("Erro: Jogador é nulo");
             return;
         }
+        
+
+        // Jogador faliu = newPosition recebe -1
+        if (newPosition < 0) {
+            // Remove o token do jogador do tabuleiro
+            Integer previousPosition = playerPositions.get(player);
+            if (previousPosition != null) {
+                SpaceView previousSpace = spaceViews.get(previousPosition);
+                if (previousSpace != null) {
+                    previousSpace.removePlayerToken(player);
+                } else {
+                    System.err.println("Erro: Posição anterior não encontrada - " + previousPosition);
+                }
+            }
+            playerPositions.remove(player);
+            System.out.println("Token de " + player.getName() + " removido do tabuleiro.");
+            return;
+        }
+
 
         newPosition = newPosition % borderPositions;
 
