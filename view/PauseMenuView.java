@@ -7,7 +7,6 @@ import java.awt.event.ActionListener;
 public class PauseMenuView extends JFrame {
     private JButton resumeButton;
     private JButton saveGameButton;
-    private JButton loadGameButton;
     private JButton exitButton;
 
     public PauseMenuView() {
@@ -30,12 +29,10 @@ public class PauseMenuView extends JFrame {
 
         resumeButton = new JButton("Continuar");
         saveGameButton = new JButton("Salvar Jogo");
-        loadGameButton = new JButton("Carregar Jogo");
         exitButton = new JButton("Sair");
 
         buttonPanel.add(resumeButton);
         buttonPanel.add(saveGameButton);
-        buttonPanel.add(loadGameButton);
         buttonPanel.add(exitButton);
 
         add(buttonPanel, BorderLayout.CENTER);
@@ -59,10 +56,6 @@ public class PauseMenuView extends JFrame {
             }
         });
     }    
-    
-    public void addLoadGameButtonListener(ActionListener listener) {
-        loadGameButton.addActionListener(listener);
-    }
 
     public void addExitButtonListener(ActionListener listener) {
         exitButton.addActionListener(listener);

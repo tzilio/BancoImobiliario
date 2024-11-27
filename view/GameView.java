@@ -2,9 +2,7 @@ package view;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +11,6 @@ import java.util.Random;
 import model.Player;
 import model.Board;
 import model.Dice;
-import model.Property;
 import model.Bank;
 import model.SaveGameManager;
 
@@ -286,7 +283,6 @@ public class GameView extends JFrame {
     private void openPauseMenu(List<Player> players, Bank bank) {
         pauseMenu.addResumeButtonListener(e -> pauseMenu.hideMenu());
         handleSaveGame(players);
-        pauseMenu.addLoadGameButtonListener(e -> handleLoadGame(players, bank));
         pauseMenu.addExitButtonListener(e -> handleExitGame());
 
         pauseMenu.showMenu();
@@ -305,43 +301,6 @@ public class GameView extends JFrame {
                 displayMessage("Erro ao salvar o jogo: " + ex.getMessage());
             }
         });
-    }
-
-    private void handleLoadGame(List<Player> players, Bank bank) {
-        File savegamesDir = new File("savegames");
-
-        File[] saveFiles = savegamesDir.listFiles((dir, name) -> name.endsWith("_savegame.dat"));
-
-        if (saveFiles == null || saveFiles.length == 0) {
-            displayMessage("Nenhum arquivo de salvamento encontrado.");
-            return;
-        }
-
-        String[] saveFileNames = Arrays.stream(saveFiles)
-                .map(file -> file.getName().replace("_savegame.dat", ""))
-                .toArray(String[]::new);
-
-        String selectedFile = (String) JOptionPane.showInputDialog(
-                this,
-                "Selecione o jogo salvo para carregar:",
-                "Carregar Jogo",
-                JOptionPane.PLAIN_MESSAGE,
-                null,
-                saveFileNames,
-                saveFileNames[0]);
-
-        if (selectedFile != null) {
-            String fileNameWithExtension = selectedFile + "_savegame.dat";
-            Object[] loadedData = SaveGameManager.loadGame("savegames/" + fileNameWithExtension);
-            if (loadedData != null) {
-                updateGameState(loadedData, players, bank);
-                displayMessage("Jogo carregado com sucesso!");
-            } else {
-                displayMessage("Erro ao carregar o jogo.");
-            }
-        } else {
-            displayMessage("Nenhum jogo foi selecionado.");
-        }
     }
 
     private void handleExitGame() {
@@ -370,25 +329,6 @@ public class GameView extends JFrame {
         } else if (choice == 1) {
             System.exit(0);
         }
-    }
-
-    private void updateGameState(Object[] loadedData, List<Player> players, Bank bank) {
-        Bank loadedBank = (Bank) loadedData[0];
-        @SuppressWarnings("unchecked")
-        List<Player> loadedPlayers = (List<Player>) loadedData[1];
-
-        Bank.setInstance(loadedBank);
-
-        players.clear();
-        players.addAll(loadedPlayers);
-
-        boardView.getSpaces().forEach(space -> space.clearPlayerTokens());
-
-        for (Player player : players) {
-            boardView.updatePlayerPosition(player, player.getPosition());
-        }
-
-        updatePlayerInfo(players);
     }
 
     public void updatePlayerInfo(List<Player> players) {
