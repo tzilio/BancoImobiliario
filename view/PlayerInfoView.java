@@ -75,47 +75,44 @@ public class PlayerInfoView extends JPanel implements Observer {
 
     private void updatePropertiesPanel() {
         propertiesPanel.removeAll(); // Limpa as propriedades anteriores
-
-        for (Property property : player.getProperties()) { // Atualiza com a lista atual do jogador
+    
+        for (Property property : player.getProperties()) {
             JPanel propertyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             JLabel propertyLabel = new JLabel(property.getName());
-
-            Board board = Board.getInstance();
-
-            JButton buildHouseButton = new JButton("Construir casa");
-            buildHouseButton.addActionListener(e -> {
-                property.buildHouse(player, board.getPropertiesInCategory(property.getCategory()));
-            
-                GameView gameView = (GameView) SwingUtilities.getWindowAncestor(this); 
-                if (gameView != null) {
-                    SpaceView spaceView = gameView.getBoardView().getSpaceView(property.getPosition());
-                    if (spaceView != null) {
-                        spaceView.updateHouses(property.getHouses(), property.hasHotel());
-                    }
-                }
-            });            
-            buildHouseButton.setEnabled(isCurrentPlayer && !Bank.getInstance().isMortgaged(property)
-                    && property.canBuildHouse(player, board.getPropertiesInCategory(property.getCategory())));
-
-            JButton mortgageButton = new JButton("Hipotecar");
+    
+            // Calcula os valores dinâmicos
+            int mortgageValue = property.getPrice() / 2;
+            int sellValue = property.getPrice() / 2;
+            int repurchaseCost = (int) (property.getPrice() * 1.2);
+    
+            // Botão Hipotecar
+            JButton mortgageButton = new JButton("Hipotecar (+" + mortgageValue + ")");
             mortgageButton.addActionListener(e -> fireMortgagePropertyEvent(property));
             mortgageButton.setEnabled(isCurrentPlayer && !Bank.getInstance().isMortgaged(property));
-
-            JButton sellButton = new JButton("Vender");
+    
+            // Botão Vender
+            JButton sellButton = new JButton("Vender (+" + sellValue + ")");
             sellButton.addActionListener(e -> fireSellPropertyEvent(property));
             sellButton.setEnabled(isCurrentPlayer && !Bank.getInstance().isMortgaged(property));
-
+    
+            // Botão Recomprar
+            JButton repurchaseButton = new JButton("Recomprar (-" + repurchaseCost + ")");
+            repurchaseButton.addActionListener(e -> fireRepurchasePropertyEvent(property));
+            repurchaseButton.setEnabled(isCurrentPlayer && Bank.getInstance().isMortgaged(property));
+    
+            // Adiciona os componentes ao painel
             propertyPanel.add(propertyLabel);
-            propertyPanel.add(buildHouseButton);
             propertyPanel.add(mortgageButton);
             propertyPanel.add(sellButton);
-
+            propertyPanel.add(repurchaseButton);
+    
             propertiesPanel.add(propertyPanel);
         }
-
+    
         propertiesPanel.revalidate();
         propertiesPanel.repaint();
-    }
+    }    
+    
 
     public void setCurrentPlayer(boolean isCurrentPlayer) {
         this.isCurrentPlayer = isCurrentPlayer;
@@ -125,6 +122,17 @@ public class PlayerInfoView extends JPanel implements Observer {
     // Eventos para hipotecar e vender propriedades
     private transient List<java.util.function.Consumer<Property>> mortgageListeners = new ArrayList<>();
     private transient List<java.util.function.Consumer<Property>> sellListeners = new ArrayList<>();
+    private transient List<java.util.function.Consumer<Property>> repurchaseListeners = new ArrayList<>();
+
+    public void addRepurchaseListener(java.util.function.Consumer<Property> listener) {
+        repurchaseListeners.add(listener);
+    }
+    
+    private void fireRepurchasePropertyEvent(Property property) {
+        for (var listener : repurchaseListeners) {
+            listener.accept(property);
+        }
+    }
 
     public void addMortgageListener(java.util.function.Consumer<Property> listener) {
         mortgageListeners.add(listener);

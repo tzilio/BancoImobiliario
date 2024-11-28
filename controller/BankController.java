@@ -47,6 +47,24 @@ public class BankController {
     }
     
     
+    public void repurchaseProperty(Player player, Property property) {
+        Bank bank = Bank.getInstance();
+    
+        if (property.getOwner() == player && bank.isMortgaged(property)) {
+            int repurchaseCost = (int) (property.getPrice() * 1.2); // 120% do preço original
+            if (player.getBalance() >= repurchaseCost) {
+                player.updateBalance(-repurchaseCost); // Deduz o custo do jogador
+                bank.liftMortgage(player, property); // Remove a hipoteca
+                System.out.println(player.getName() + " recomprou a propriedade " + property.getName() + " por " + repurchaseCost);
+            } else {
+                System.out.println(player.getName() + " não tem saldo suficiente para recomprar " + property.getName());
+            }
+        } else {
+            System.out.println("A propriedade " + property.getName() + " não está hipotecada ou não pertence a " + player.getName());
+        }
+    }
+    
+
 
     public void chargeFee(Player player, int amount) {
         player.updateBalance(-amount);
