@@ -34,55 +34,7 @@ public class GameController {
         setupManualMoveAction();
         setupSellPropertyAction();
         setupMortgagePropertyAction();
-        setupRepurchasePropertyAction();
     }
-
-    private void checkBankruptcy(Player player) {
-        if (player.getBalance() < 0) {
-            view.displayMessage(player.getName() + " está falido e será removido do jogo!");
-            System.out.println(player.getName() + " está falido e será removido do jogo!");
-            
-            // Transferir propriedades para o credor (ou banco se for o caso)
-            transferProperties(player);
-
-            // Remover o jogador do jogo
-            removePlayer(player);
-        }
-    }
-
-    // Método para transferir propriedades do jogador falido
-    private void transferProperties(Player player) {
-
-        for (Property property : new ArrayList<>(player.getProperties())) {
-            player.removeProperty(property);
-            property.setOwner(null);
-            view.displayMessage(player.getName() + " transferiu " + property.getName() + " para o banco.");
-            System.out.println(player.getName() + " transferiu " + property.getName() + " para o banco.");
-        }
-    }
-
-    // Método para remover um jogador do jogo
-    private void removePlayer(Player player) {
-        // Remover da lista de jogadores
-        players.remove(player);
-
-        // Remover do BoardView
-        view.getBoardView().updatePlayerPosition(player, -1); // Posição inválida para remover o token
-
-        // Atualizar a interface gráfica
-        view.displayMessage(player.getName() + " foi removido do jogo.");
-
-        // Verificar se há um vencedor
-        if (players.size() == 1) {
-            Player winner = players.get(0);
-            view.displayMessage(winner.getName() + " venceu o jogo!");
-            System.out.println(winner.getName() + " venceu o jogo!");
-        } else if (players.isEmpty()) {
-            view.displayMessage("Todos os jogadores faliram. O jogo terminou sem vencedores.");
-            System.out.println("Todos os jogadores faliram. O jogo terminou sem vencedores.");
-        }
-    }
-
 
     private void setupManualMoveAction() {
         view.addMovePlayerListener(steps -> {
@@ -199,22 +151,6 @@ public class GameController {
         view.updatePlayerInfo(players); // Atualiza a interface gráfica
     }
 
-
-    private void setupRepurchasePropertyAction() {
-        for (Player player : players) {
-            PlayerInfoView infoView = view.getPlayerInfoView(player);
-            if (infoView != null) {
-                infoView.addRepurchaseListener(property -> repurchaseProperty(player, property));
-            }
-        }
-    }
-    
-    private void repurchaseProperty(Player player, Property property) {
-        BankController bankController = new BankController();
-        bankController.repurchaseProperty(player, property);
-        view.updatePlayerInfo(players); // Atualiza a interface gráfica
-    }    
-
     private void setupPassTurnAction() {
         view.getPassTurnButton().addActionListener(e -> {
             if (awaitingTurnEnd) {
@@ -262,8 +198,6 @@ public class GameController {
     
         int roll = dice1 + dice2;
         movePlayer(currentPlayer, roll);
-
-        checkBankruptcy(currentPlayer);
     }
     
 
@@ -319,8 +253,6 @@ public class GameController {
         } else if (space instanceof TaxReturn) {
             view.displayMessage(player.getName() + " recebeu um retorno de imposto!");
         }
-
-        checkBankruptcy(player);
     }
 
     private void handleProperty(Property property, Player player) {

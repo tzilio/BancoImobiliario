@@ -76,9 +76,27 @@ public class PlayerInfoView extends JPanel implements Observer {
     private void updatePropertiesPanel() {
         propertiesPanel.removeAll(); // Limpa as propriedades anteriores
     
-        for (Property property : player.getProperties()) {
+        for (Property property : player.getProperties()) { // Atualiza com a lista atual do jogador
             JPanel propertyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             JLabel propertyLabel = new JLabel(property.getName());
+    
+            Board board = Board.getInstance();
+    
+            // Botão Construir Casa
+            JButton buildHouseButton = new JButton("Construir casa");
+            buildHouseButton.addActionListener(e -> {
+                property.buildHouse(player, board.getPropertiesInCategory(property.getCategory()));
+            
+                GameView gameView = (GameView) SwingUtilities.getWindowAncestor(this); 
+                if (gameView != null) {
+                    SpaceView spaceView = gameView.getBoardView().getSpaceView(property.getPosition());
+                    if (spaceView != null) {
+                        spaceView.updateHouses(property.getHouses(), property.hasHotel());
+                    }
+                }
+            });
+            buildHouseButton.setEnabled(isCurrentPlayer && !Bank.getInstance().isMortgaged(property)
+                    && property.canBuildHouse(player, board.getPropertiesInCategory(property.getCategory())));
     
             // Calcula os valores dinâmicos
             int mortgageValue = property.getPrice() / 2;
@@ -102,6 +120,7 @@ public class PlayerInfoView extends JPanel implements Observer {
     
             // Adiciona os componentes ao painel
             propertyPanel.add(propertyLabel);
+            propertyPanel.add(buildHouseButton);
             propertyPanel.add(mortgageButton);
             propertyPanel.add(sellButton);
             propertyPanel.add(repurchaseButton);
@@ -111,7 +130,7 @@ public class PlayerInfoView extends JPanel implements Observer {
     
         propertiesPanel.revalidate();
         propertiesPanel.repaint();
-    }    
+    }
     
 
     public void setCurrentPlayer(boolean isCurrentPlayer) {
@@ -133,7 +152,7 @@ public class PlayerInfoView extends JPanel implements Observer {
             listener.accept(property);
         }
     }
-
+    
     public void addMortgageListener(java.util.function.Consumer<Property> listener) {
         mortgageListeners.add(listener);
     }
