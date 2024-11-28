@@ -75,19 +75,48 @@ public class PlayerInfoView extends JPanel implements Observer {
 
     private void updatePropertiesPanel() {
         propertiesPanel.removeAll(); // Limpa as propriedades anteriores
-    
+        
         for (Property property : player.getProperties()) { // Atualiza com a lista atual do jogador
             JPanel propertyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             JLabel propertyLabel = new JLabel(property.getName());
-    
+            
             Board board = Board.getInstance();
-    
+            
+            // Calcula os valores dinâmicos
+            int housePrice = property.getHousePrice(); // Preço de cada casa
+            int sellHouseValue = housePrice / 2; // Valor de venda de uma casa
+            int mortgageValue = property.getPrice() / 2; // Valor da hipoteca
+            int sellValue = property.getPrice() / 2; // Valor de venda da propriedade
+            int repurchaseCost = (int) (property.getPrice() * 1.2); // Custo para recomprar
+
+
             // Botão Construir Casa
             JButton buildHouseButton = new JButton("Construir casa");
             buildHouseButton.addActionListener(e -> {
                 property.buildHouse(player, board.getPropertiesInCategory(property.getCategory()));
             
-                GameView gameView = (GameView) SwingUtilities.getWindowAncestor(this); 
+                GameView gameView = (GameView) SwingUtilities.getWindowAncestor(this);
+                if (gameView != null) {
+                    for (Property categoryProperty : board.getPropertiesInCategory(property.getCategory())) {
+                        SpaceView spaceView = gameView.getBoardView().getSpaceView(categoryProperty.getPosition());
+                        if (spaceView != null) {
+                            spaceView.updateHouses(categoryProperty.getHouses(), categoryProperty.hasHotel());
+                        }
+                    }
+                }
+    
+                // Recalcula o estado dos botões
+                updatePropertiesPanel();
+            });
+            buildHouseButton.setEnabled(isCurrentPlayer && !Bank.getInstance().isMortgaged(property)
+                    && property.canBuildHouse(player, board.getPropertiesInCategory(property.getCategory())));
+    
+    
+            // Botão Vender Casinhas
+            JButton sellHouseButton = new JButton("Vender casinha (+" + sellHouseValue + ")");
+            sellHouseButton.addActionListener(e -> {
+                property.sellHouse(player);
+                GameView gameView = (GameView) SwingUtilities.getWindowAncestor(this);
                 if (gameView != null) {
                     SpaceView spaceView = gameView.getBoardView().getSpaceView(property.getPosition());
                     if (spaceView != null) {
@@ -95,24 +124,18 @@ public class PlayerInfoView extends JPanel implements Observer {
                     }
                 }
             });
-            buildHouseButton.setEnabled(isCurrentPlayer && !Bank.getInstance().isMortgaged(property)
-                    && property.canBuildHouse(player, board.getPropertiesInCategory(property.getCategory())));
-    
-            // Calcula os valores dinâmicos
-            int mortgageValue = property.getPrice() / 2;
-            int sellValue = property.getPrice() / 2;
-            int repurchaseCost = (int) (property.getPrice() * 1.2);
-    
+            sellHouseButton.setEnabled(isCurrentPlayer && (property.getHouses() > 0 || property.hasHotel()));
+            
             // Botão Hipotecar
             JButton mortgageButton = new JButton("Hipotecar (+" + mortgageValue + ")");
             mortgageButton.addActionListener(e -> fireMortgagePropertyEvent(property));
-            mortgageButton.setEnabled(isCurrentPlayer && !Bank.getInstance().isMortgaged(property));
-    
+            mortgageButton.setEnabled(isCurrentPlayer && !Bank.getInstance().isMortgaged(property) && property.canMortgageOrSell());
+
             // Botão Vender
             JButton sellButton = new JButton("Vender (+" + sellValue + ")");
             sellButton.addActionListener(e -> fireSellPropertyEvent(property));
-            sellButton.setEnabled(isCurrentPlayer && !Bank.getInstance().isMortgaged(property));
-    
+            sellButton.setEnabled(isCurrentPlayer && !Bank.getInstance().isMortgaged(property) && property.canMortgageOrSell());
+
             // Botão Recomprar
             JButton repurchaseButton = new JButton("Recomprar (-" + repurchaseCost + ")");
             repurchaseButton.addActionListener(e -> fireRepurchasePropertyEvent(property));
@@ -121,6 +144,7 @@ public class PlayerInfoView extends JPanel implements Observer {
             // Adiciona os componentes ao painel
             propertyPanel.add(propertyLabel);
             propertyPanel.add(buildHouseButton);
+            propertyPanel.add(sellHouseButton);
             propertyPanel.add(mortgageButton);
             propertyPanel.add(sellButton);
             propertyPanel.add(repurchaseButton);

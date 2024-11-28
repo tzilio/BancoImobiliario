@@ -57,18 +57,11 @@ public class Bank implements Serializable {
 
     public void liftMortgage(Player player, Property property) {
         if (property.getOwner() == player && isMortgaged(property)) {
-            int mortgageLiftCost = (int) (property.getPrice() * 0.55);  
-            if (player.getBalance() >= mortgageLiftCost) {
-                player.updateBalance(-mortgageLiftCost);
-                mortgagedProperties.put(property, false);  
-                System.out.println(player.getName() + " pagou " + mortgageLiftCost + " para quitar a hipoteca de " + property.getName());
-            } else {
-                System.out.println(player.getName() + " não tem saldo suficiente para quitar a hipoteca de " + property.getName());
-            }
-        } else {
-            System.out.println("A propriedade " + property.getName() + " não está hipotecada ou não pertence a " + player.getName());
+            mortgagedProperties.put(property, false); // Remove o status de hipoteca
+            System.out.println("Hipoteca da propriedade " + property.getName() + " foi removida.");
         }
     }
+
 
     public boolean isMortgaged(Property property) {
         return mortgagedProperties.getOrDefault(property, false);

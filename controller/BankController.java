@@ -63,8 +63,6 @@ public class BankController {
             System.out.println("A propriedade " + property.getName() + " não está hipotecada ou não pertence a " + player.getName());
         }
     }
-    
-
 
     public void chargeFee(Player player, int amount) {
         player.updateBalance(-amount);

@@ -64,39 +64,40 @@ public class Property extends BoardPosition {
     public boolean canBuildHouse(Player player, ArrayList<Property> propertiesInCategory) {
         if (hasHotel) {
             System.out.println("Já possui hotel: " + getName());
-            return false;
+            return false; // Não pode construir casa em uma propriedade que já tem hotel
         }
-
-        int totalPropertiesInCategory = propertiesInCategory.size();
-
-        int ownedPropertiesInCategory = 0;
+    
+        // Verifica se o jogador possui todas as propriedades da categoria
         for (Property property : propertiesInCategory) {
-            if (player.equals(property.getOwner())) {
-                ownedPropertiesInCategory++;
+            if (!player.equals(property.getOwner())) {
+                return false;
             }
         }
-
-        if (ownedPropertiesInCategory < totalPropertiesInCategory) {
-            return false;
-        }
-
-        boolean balanced = true;
+    
+        // Verifica o equilíbrio das casas na categoria (considerando hotéis como 5 casas)
         for (Property property : propertiesInCategory) {
-            if (property.getHouses() < this.getHouses()) {
-                balanced = false;
-                break;
+            int effectiveHouses = property.hasHotel() ? 5 : property.getHouses();
+            if (effectiveHouses < (this.hasHotel() ? 5 : this.getHouses())) {
+                return false;
             }
         }
-
-        if (!balanced) return false;
-
+    
+        // Verifica se o jogador tem saldo suficiente
+        if (player.getBalance() < housePrice) {
+            return false;
+        }
+    
         return true;
+    }
+    
+    public boolean canMortgageOrSell() {
+        return houses == 0 && !hasHotel;
     }
 
     public void buildHouse(Player player, ArrayList<Property> propertiesInCategory) {
         if (canBuildHotel(player, propertiesInCategory)) {
             buildHotel(player);
-        } else if (canBuildHouse(player, propertiesInCategory) && player.getBalance() >= housePrice) {
+        } else if (canBuildHouse(player, propertiesInCategory)) {
             player.updateBalance(-housePrice);
             houses++;
             System.out.println(player.getName() + " construiu uma casa em " + getName());
@@ -104,6 +105,7 @@ public class Property extends BoardPosition {
             System.out.println(player.getName() + " não pode construir uma casa em " + getName());
         }
     }
+    
 
     public boolean canBuildHotel(Player player, ArrayList<Property> propertiesInCategory) {
         return owner == player &&
@@ -122,6 +124,26 @@ public class Property extends BoardPosition {
             System.out.println(player.getName() + " não pode construir um hotel em " + getName());
         }
     }
+
+    public void sellHouse(Player player) {
+        if (hasHotel) {
+            // Converte o hotel em 4 casas antes de vender
+            hasHotel = false;
+            houses = 4;
+            System.out.println("Hotel em " + getName() + " foi convertido em 4 casas.");
+            return;
+        }
+    
+        if (houses > 0) {
+            houses--; // Remove uma casa
+            player.updateBalance(housePrice / 2); // Adiciona metade do preço ao saldo do jogador
+            System.out.println(player.getName() + " vendeu uma casa em " + getName());
+        } else {
+            System.out.println("Não há casas ou hotéis para vender em " + getName());
+        }
+    }
+    
+    
 
     @Override
     public void onLand(Player player) {

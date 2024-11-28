@@ -34,6 +34,7 @@ public class GameController {
         setupManualMoveAction();
         setupSellPropertyAction();
         setupMortgagePropertyAction();
+        setupRepurchasePropertyAction();
     }
 
     private void setupManualMoveAction() {
@@ -358,4 +359,20 @@ public class GameController {
         }
     }
 
+    //MOVER ISSO AQUI NO FUTURO ------------------------------------
+    private void setupRepurchasePropertyAction() {
+        for (Player player : players) {
+            PlayerInfoView infoView = view.getPlayerInfoView(player);
+            if (infoView != null) {
+                infoView.addRepurchaseListener(property -> repurchaseProperty(player, property));
+            }
+        }
+    }
+    
+    private void repurchaseProperty(Player player, Property property) {
+        BankController bankController = new BankController();
+        bankController.repurchaseProperty(player, property);
+        view.updatePlayerInfo(players); // Atualiza a interface gráfica
+    }
+    
 }
