@@ -34,7 +34,7 @@ public class Board {
         "Bolsa de Troco",
         "Urubus do PIX"
     };
-    private static final double[] SHARE_MULTIPLIERS = {1.5, 2.0, 1.2, 1.8, 1.6, 1.5};
+    private static final double[] SHARE_MULTIPLIERS = {15, 20, 12, 18, 16, 15};
     private static final int[] SHARE_PRICES = {250, 300, 350, 400, 450, 200};
 
     private static final PropertyData[] PROPERTIES_DATA = {
