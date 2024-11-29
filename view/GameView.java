@@ -20,6 +20,7 @@ public class GameView extends JFrame {
     private JButton rollDiceButton;
     private JButton buyPropertyButton;
     private JButton buildHouseButton;
+    private JButton quitButton;
     private BoardView boardView;
     private JPanel playerInfoPanel;
     private JButton passTurnButton;
@@ -224,6 +225,18 @@ public class GameView extends JFrame {
         }
     }
 
+    private transient java.util.List<java.util.function.Consumer<Void>> quitPlayerListeners = new ArrayList<>();
+
+    public void addQuitPlayerListener(java.util.function.Consumer<Void> listener) {
+        quitPlayerListeners.add(listener);
+    }
+    
+    private void fireQuitPlayerEvent() {
+        for (var listener : quitPlayerListeners) {
+            listener.accept(null);
+        }
+    }
+
     private JPanel setupButtonPanel() {
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
@@ -241,6 +254,11 @@ public class GameView extends JFrame {
         // Campo e botão para mover manualmente o jogador
         JTextField moveField = new JTextField();
         JButton moveButton = new JButton("Mover");
+
+        //Botão de desistência(jogador atual desiste).
+        quitButton = new JButton("Desistir");
+        quitButton.setEnabled(true);
+        quitButton.addActionListener(e -> fireQuitPlayerEvent());
 
         moveField.setMaximumSize(new Dimension(200, 30)); // Define o tamanho do campo de texto
         moveButton.setEnabled(true);
@@ -272,6 +290,9 @@ public class GameView extends JFrame {
         buttonPanel.add(moveField);
         buttonPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         buttonPanel.add(moveButton);
+        buttonPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        buttonPanel.add(quitButton);
+    
 
         return buttonPanel;
     }
@@ -329,6 +350,18 @@ public class GameView extends JFrame {
         } else if (choice == 1) {
             System.exit(0);
         }
+    }
+
+
+    public void removePlayerPanel (Player player) {
+        // Remover o painel de informações do jogador
+        PlayerInfoView playerInfoView = playerInfoViews.remove(player);
+        if (playerInfoView != null) {
+            playerInfoPanel.remove(playerInfoView);
+        }
+
+        playerInfoPanel.revalidate();
+        playerInfoPanel.repaint();
     }
 
     public void updatePlayerInfo(List<Player> players) {

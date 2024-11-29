@@ -7,6 +7,7 @@ import view.SpaceView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.swing.SwingUtilities;
 
@@ -35,7 +36,61 @@ public class GameController {
         setupSellPropertyAction();
         setupMortgagePropertyAction();
         setupRepurchasePropertyAction();
+        setupQuitAction();
     }
+
+    private void checkBankruptcy(Player player) {
+        if (player.getBalance() < 0) {
+            view.displayMessage(player.getName() + " está falido e será removido do jogo!");
+            System.out.println(player.getName() + " está falido e será removido do jogo!");
+            
+            // Transferir propriedades para o credor (ou banco se for o caso)
+            transferProperties(player);
+
+            // Remover o jogador do jogo
+            removePlayer(player);
+
+            endTurn();
+        }
+    }
+
+    // Método para transferir propriedades do jogador falido para o banco
+    private void transferProperties(Player player) {
+
+        for (Property property : new ArrayList<>(player.getProperties())) {
+            player.removeProperty(property);
+            property.setOwner(null);
+            view.displayMessage(player.getName() + " transferiu " + property.getName() + " para o banco.");
+            System.out.println(player.getName() + " transferiu " + property.getName() + " para o banco.");
+        }
+    }
+
+    // Método para remover um jogador do jogo
+    private void removePlayer(Player player) {
+        // Remover do BoardView
+        view.getBoardView().updatePlayerPosition(player, -1); // Posição inválida para remover o token
+
+        players.remove(player);
+        view.displayMessage(player.getName() + " foi removido do jogo.");
+
+        view.removePlayerPanel(player);
+
+
+        currentPlayerIndex--;
+    }
+
+    private void setupQuitAction() {
+        view.addQuitPlayerListener(v -> {
+            Player currentPlayer = players.get(currentPlayerIndex);
+            view.displayMessage(currentPlayer.getName() + " desistiu do jogo!");
+            System.out.println(currentPlayer.getName() + " desistiu do jogo.");
+            
+            removePlayer(currentPlayer);
+    
+            endTurn();
+        });
+    }
+    
 
     private void setupManualMoveAction() {
         view.addMovePlayerListener(steps -> {
@@ -170,6 +225,8 @@ public class GameController {
 
         Player currentPlayer = players.get(currentPlayerIndex);
 
+        checkBankruptcy(currentPlayer);
+
         if (isPlayerInJail(currentPlayer)) {
             return;
         }
@@ -199,6 +256,8 @@ public class GameController {
     
         int roll = dice1 + dice2;
         movePlayer(currentPlayer, roll);
+
+        checkBankruptcy(currentPlayer);
     }
     
 
@@ -212,11 +271,17 @@ public class GameController {
                     return;
                 }
                 SwingUtilities.invokeLater(() -> {
+                    if (!players.contains(player)) {
+                        return; // Interrompe a movimentação se o jogador foi removido
+                    }
                     player.setPosition((player.getPosition() + 1) % Board.BOARD_SIZE);
                     view.getBoardView().updatePlayerPosition(player, player.getPosition());
                 });
             }
             SwingUtilities.invokeLater(() -> {
+                if (!players.contains(player)) {
+                    return; // Interrompe a movimentação se o jogador foi removido
+                }
                 BoardPosition currentSpace = board.getSpace(player.getPosition());
                 applySpaceEffect(player, currentSpace);
                 view.displayMessage(player.getName() + " chegou à posição " + player.getPosition());
@@ -254,6 +319,8 @@ public class GameController {
         } else if (space instanceof TaxReturn) {
             view.displayMessage(player.getName() + " recebeu um retorno de imposto!");
         }
+
+        checkBankruptcy(player);
     }
 
     private void handleProperty(Property property, Player player) {
@@ -330,17 +397,27 @@ public class GameController {
     }
 
     private void moveToNextPlayer() {
+        if(players.isEmpty())
+            return;
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
         displayCurrentPlayerTurn();
     }
 
     private void displayCurrentPlayerTurn() {
+        if(players.isEmpty())
+            return;
+        System.out.println("Jogadores restantes: " + players.stream().map(Player::getName).collect(Collectors.toList()));
+        System.out.println("currentPlayerIndex: " + currentPlayerIndex);
         Player currentPlayer = players.get(currentPlayerIndex);
+        System.out.println("É a vez do jogador: " + currentPlayer.getName());
+
     
         // Atualiza o estado de cada PlayerInfoView
         for (Player player : players) {
             PlayerInfoView infoView = view.getPlayerInfoView(player);
-            infoView.setCurrentPlayer(player == currentPlayer);
+            if (infoView != null) {
+                infoView.setCurrentPlayer(player == currentPlayer);
+            }
         }
     
         view.displayPlayerTurn(currentPlayer);
