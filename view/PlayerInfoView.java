@@ -9,6 +9,7 @@ import java.util.List;
 
 import model.Player;
 import model.Property;
+import model.ShareSpace;
 import model.Bank;
 import model.Board;
 import model.Observer;
@@ -151,6 +152,25 @@ public class PlayerInfoView extends JPanel implements Observer {
     
             propertiesPanel.add(propertyPanel);
         }
+
+        for (ShareSpace share : player.getShares()) {
+            JPanel sharePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            JLabel shareLabel = new JLabel(share.getName());
+        
+            int sellShareValue = share.getPrice();
+        
+            JButton sellShareButton = new JButton("Vender ação (+" + sellShareValue + ")");
+            sellShareButton.addActionListener(e -> {
+                player.sellShare(share); // Realiza a venda
+                updatePropertiesPanel(); // Atualiza o painel
+            });
+            sellShareButton.setEnabled(isCurrentPlayer && share.getOwner() == player);
+        
+            sharePanel.add(shareLabel);
+            sharePanel.add(sellShareButton);
+            propertiesPanel.add(sharePanel);
+        }
+        
     
         propertiesPanel.revalidate();
         propertiesPanel.repaint();

@@ -11,6 +11,7 @@ public class Player implements Serializable {
     private List<Property> properties;
     private boolean inJail;
     private String color; // Cor do peão
+    private List<ShareSpace> shares;
 
     // Lista de observadores (transient, pois não deve ser serializada)
     private transient List<Observer> observers;
@@ -21,6 +22,7 @@ public class Player implements Serializable {
         this.balance = initialBalance;
         this.position = 0;
         this.properties = new ArrayList<>();
+        this.shares = new ArrayList<>();
         this.inJail = false;
         this.color = color;
         this.observers = new ArrayList<>();
@@ -122,5 +124,30 @@ public class Player implements Serializable {
     public void removeProperty(Property property) {
         properties.remove(property);
         notifyObservers();
-    }    
+    } 
+    
+    public void sellShare(ShareSpace share) {
+        if (shares.contains(share)) { // Verifica se o jogador possui a ação
+            updateBalance(share.getPrice()); // Adiciona o valor ao saldo do jogador
+            shares.remove(share); // Remove a ação da lista do jogador
+            share.setOwner(null); // Remove o proprietário da ação
+            System.out.println(getName() + " vendeu a ação: " + share.getName());
+        } else {
+            System.out.println("A ação não pertence ao jogador.");
+        }
+    }
+       
+    public List<ShareSpace> getShares() {
+        return shares; // Supondo que `shares` é uma lista de ações pertencentes ao jogador
+    }
+    
+    public void addShare(ShareSpace share) {
+        if (!shares.contains(share)) { // Evita duplicatas
+            shares.add(share);
+            share.setOwner(this); // Define o jogador como proprietário da ação
+            System.out.println(getName() + " adquiriu a ação: " + share.getName());
+        }
+    }
+    
+    
 }

@@ -74,4 +74,6 @@ public class Bank implements Serializable {
     public int getTotalMoney() {
         return totalMoney;
     }
+
+    
 }

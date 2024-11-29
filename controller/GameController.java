@@ -279,13 +279,13 @@ public class GameController {
     private void buyProperty() {
         Player currentPlayer = players.get(currentPlayerIndex);
         BoardPosition currentPosition = board.getSpace(currentPlayer.getPosition());
-
+    
         if (currentPosition instanceof Property) {
             processPropertyPurchase((Property) currentPosition, currentPlayer);
         } else if (currentPosition instanceof ShareSpace) {
             processShareSpacePurchase((ShareSpace) currentPosition, currentPlayer);
         }
-    }
+    }    
 
     private void processPropertyPurchase(Property property, Player player) {
         if (player.getBalance() >= property.getPrice()) {
@@ -302,14 +302,17 @@ public class GameController {
     private void processShareSpacePurchase(ShareSpace shareSpace, Player player) {
         int price = shareSpace.getPrice();
         if (player.getBalance() >= price) {
-            player.updateBalance(-price);
-            shareSpace.setOwner(player);
+            player.updateBalance(-price); // Deduz o preço da ação do saldo do jogador
+            shareSpace.setOwner(player); // Define o jogador como proprietário da ação
+            player.addShare(shareSpace); // Adiciona a ação ao jogador
             view.displayMessage(player.getName() + " comprou " + shareSpace.getName() + " por " + price);
-            view.enableBuyPropertyButton(false);
+            view.enableBuyPropertyButton(false); // Desabilita o botão de compra após a transação
+            view.updatePlayerInfo(players); // Atualiza a interface gráfica
         } else {
             view.displayMessage(player.getName() + " não tem saldo suficiente para comprar " + shareSpace.getName());
         }
     }
+    
 
     private void sendPlayerToJail(Player player) {
         prison.sendToJail(player);
