@@ -236,6 +236,7 @@ public class GameView extends JFrame {
             listener.accept(null);
         }
     }
+    
 
     private JPanel setupButtonPanel() {
         JPanel buttonPanel = new JPanel();
@@ -353,16 +354,16 @@ public class GameView extends JFrame {
     }
 
 
-    public void removePlayerPanel (Player player) {
-        // Remover o painel de informações do jogador
+    public void removePlayerPanel(Player player) {
         PlayerInfoView playerInfoView = playerInfoViews.remove(player);
         if (playerInfoView != null) {
             playerInfoPanel.remove(playerInfoView);
         }
-
+    
         playerInfoPanel.revalidate();
         playerInfoPanel.repaint();
     }
+    
 
     public void updatePlayerInfo(List<Player> players) {
         playerInfoPanel.removeAll();
@@ -423,5 +424,50 @@ public class GameView extends JFrame {
     public PlayerInfoView getPlayerInfoView(Player player) {
         return playerInfoViews.get(player);
     }
+    
+
+    public void displayWinnerScreen(List<Player> ranking, GameView gameView) {
+        JFrame winnerFrame = new JFrame("Fim do Jogo!");
+        winnerFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        winnerFrame.setSize(400, 300);
+    
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+    
+        JLabel titleLabel = new JLabel("Ranking Final");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panel.add(titleLabel);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+    
+        int position = 1;
+        for (Player player : ranking) {
+            JLabel playerLabel = new JLabel(position + "º: " + player.getName() +
+                    (player.getBalance() <= 0 ? "(Eliminado)" : " (Vencedor)"));
+            playerLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+            playerLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            panel.add(playerLabel);
+            position++;
+        }
+    
+        JButton closeButton = new JButton("Voltar ao Menu");
+        closeButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        closeButton.addActionListener(e -> {
+            winnerFrame.dispose(); // Fecha a tela do ranking
+            gameView.dispose(); // Fecha a tela do jogo
+            SwingUtilities.invokeLater(() -> {
+                MenuView menuView = new MenuView(); // Abre o menu principal
+                menuView.setVisible(true);
+            });
+        });
+    
+        panel.add(Box.createRigidArea(new Dimension(0, 20)));
+        panel.add(closeButton);
+    
+        winnerFrame.add(panel);
+        winnerFrame.setLocationRelativeTo(null); // Centraliza a janela
+        winnerFrame.setVisible(true);
+    }
+    
     
 }

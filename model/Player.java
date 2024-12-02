@@ -149,5 +149,9 @@ public class Player implements Serializable {
         }
     }
     
-    
+    public boolean isBankrupt() {
+        return (balance <= 0);
+    }
+
+
 }

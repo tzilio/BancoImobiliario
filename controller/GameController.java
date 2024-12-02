@@ -19,7 +19,7 @@ public class GameController {
     private GameView view;
     private Prison prison;
     private boolean awaitingTurnEnd;
-
+    
     public GameController(List<Player> players, GameView view) {
         this.players = players;
         this.board = Board.getInstance();
@@ -38,55 +38,91 @@ public class GameController {
         setupRepurchasePropertyAction();
         setupQuitAction();
     }
+    
+    private List<Player> eliminationRanking = new ArrayList<>();
 
     private void checkBankruptcy(Player player) {
         if (player.getBalance() < 0) {
             view.displayMessage(player.getName() + " está falido e será removido do jogo!");
             System.out.println(player.getName() + " está falido e será removido do jogo!");
-            
+    
             // Transferir propriedades para o credor (ou banco se for o caso)
             transferProperties(player);
-
+    
+            // Adicionar ao ranking de eliminações
+            eliminationRanking.add(player);
+    
             // Remover o jogador do jogo
             removePlayer(player);
-
+    
+            // Verificar se o jogo terminou
+            checkGameEnd();
+    
+            // Encerrar o turno
             endTurn();
         }
     }
 
+private void checkGameEnd() {
+    if (players.size() == 1) { // Apenas um jogador restante
+        Player winner = players.get(0);
+        view.displayMessage("Fim do jogo! O vencedor é " + winner.getName());
+        List<Player> ranking = new ArrayList<>(eliminationRanking);
+        ranking.add(0, winner); // Adiciona o vencedor no topo do ranking
+        view.displayWinnerScreen(ranking, view); // Passa a instância do GameView
+    }
+}
+
+    
+
     // Método para transferir propriedades do jogador falido para o banco
     private void transferProperties(Player player) {
-
+        // Transfere propriedades para o banco
         for (Property property : new ArrayList<>(player.getProperties())) {
             player.removeProperty(property);
-            property.setOwner(null);
+            property.setOwner(null); // Remove o proprietário
             view.displayMessage(player.getName() + " transferiu " + property.getName() + " para o banco.");
-            System.out.println(player.getName() + " transferiu " + property.getName() + " para o banco.");
+        }
+    
+        // Transfere ações para o banco
+        for (ShareSpace share : new ArrayList<>(player.getShares())) {
+            player.getShares().remove(share);
+            share.setOwner(null); // Remove o proprietário
+            view.displayMessage(player.getName() + " transferiu " + share.getName() + " para o banco.");
         }
     }
+    
 
     // Método para remover um jogador do jogo
     private void removePlayer(Player player) {
         // Remover do BoardView
-        view.getBoardView().updatePlayerPosition(player, -1); // Posição inválida para remover o token
-
-        players.remove(player);
+        view.getBoardView().updatePlayerPosition(player, -1); // Remove o token do tabuleiro
+    
+        players.remove(player); // Remove o jogador da lista ativa
+        view.removePlayerPanel(player); // Remove o painel do jogador
+        eliminationRanking.add(player); // Adiciona ao ranking
+    
         view.displayMessage(player.getName() + " foi removido do jogo.");
-
-        view.removePlayerPanel(player);
-
-
-        currentPlayerIndex--;
+    
+        // Ajustar o índice do jogador atual
+        if (!players.isEmpty()) {
+            currentPlayerIndex = currentPlayerIndex % players.size();
+        }
+    
+        // Verificar se restam jogadores
+        checkGameEnd();
     }
+    
 
     private void setupQuitAction() {
         view.addQuitPlayerListener(v -> {
             Player currentPlayer = players.get(currentPlayerIndex);
             view.displayMessage(currentPlayer.getName() + " desistiu do jogo!");
             System.out.println(currentPlayer.getName() + " desistiu do jogo.");
-            
+           
+            currentPlayer.setBalance(-1);
             removePlayer(currentPlayer);
-    
+
             endTurn();
         });
     }
