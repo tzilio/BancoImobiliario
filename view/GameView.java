@@ -427,6 +427,7 @@ public class GameView extends JFrame {
     
 
     public void displayWinnerScreen(List<Player> ranking, GameView gameView) {
+        gameView.setVisible(false);
         JFrame winnerFrame = new JFrame("Fim do Jogo!");
         winnerFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         winnerFrame.setSize(400, 300);
