@@ -3,7 +3,6 @@ package controller;
 import model.*;
 import view.GameView;
 import view.PlayerInfoView;
-import view.SpaceView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +18,7 @@ public class GameController {
     private GameView view;
     private Prison prison;
     private boolean awaitingTurnEnd;
+    private PropertyController propertyController;
     
     public GameController(List<Player> players, GameView view) {
         this.players = players;
@@ -27,8 +27,13 @@ public class GameController {
         this.view = view;
         this.currentPlayerIndex = 0;
         this.prison = Prison.getInstance(board.getJailPosition());
+        this.propertyController = new PropertyController(view);
         this.awaitingTurnEnd = false; // Inicializa o estado do turno
         initializePlayers();
+        setupActions();
+    }
+
+    private void setupActions() {
         setupRollDiceAction();
         setupBuyPropertyAction();
         setupPassTurnAction();
@@ -38,6 +43,7 @@ public class GameController {
         setupRepurchasePropertyAction();
         setupQuitAction();
     }
+    
     
     private List<Player> eliminationRanking = new ArrayList<>();
 
@@ -77,20 +83,9 @@ private void checkGameEnd() {
 
     // Método para transferir propriedades do jogador falido para o banco
     private void transferProperties(Player player) {
-        // Transfere propriedades para o banco
-        for (Property property : new ArrayList<>(player.getProperties())) {
-            player.removeProperty(property);
-            property.setOwner(null); // Remove o proprietário
-            view.displayMessage(player.getName() + " transferiu " + property.getName() + " para o banco.");
-        }
-    
-        // Transfere ações para o banco
-        for (ShareSpace share : new ArrayList<>(player.getShares())) {
-            player.getShares().remove(share);
-            share.setOwner(null); // Remove o proprietário
-            view.displayMessage(player.getName() + " transferiu " + share.getName() + " para o banco.");
-        }
+        propertyController.transferProperties(player);
     }
+    
     
 
     // Método para remover um jogador do jogo
@@ -384,39 +379,12 @@ private void checkGameEnd() {
         BoardPosition currentPosition = board.getSpace(currentPlayer.getPosition());
     
         if (currentPosition instanceof Property) {
-            processPropertyPurchase((Property) currentPosition, currentPlayer);
+            propertyController.buyProperty(currentPlayer, (Property) currentPosition);
         } else if (currentPosition instanceof ShareSpace) {
-            processShareSpacePurchase((ShareSpace) currentPosition, currentPlayer);
+            propertyController.buyShare(currentPlayer, (ShareSpace) currentPosition);
         }
     }    
-
-    private void processPropertyPurchase(Property property, Player player) {
-        if (player.getBalance() >= property.getPrice()) {
-            player.updateBalance(-property.getPrice());
-            property.setOwner(player);
-            player.addProperty(property);
-            view.displayMessage(player.getName() + " comprou " + property.getName() + " por " + property.getPrice());
-            view.enableBuyPropertyButton(false);
-        } else {
-            view.displayMessage(player.getName() + " não tem saldo suficiente para comprar " + property.getName());
-        }
-    }
-
-    private void processShareSpacePurchase(ShareSpace shareSpace, Player player) {
-        int price = shareSpace.getPrice();
-        if (player.getBalance() >= price) {
-            player.updateBalance(-price); // Deduz o preço da ação do saldo do jogador
-            shareSpace.setOwner(player); // Define o jogador como proprietário da ação
-            player.addShare(shareSpace); // Adiciona a ação ao jogador
-            view.displayMessage(player.getName() + " comprou " + shareSpace.getName() + " por " + price);
-            view.enableBuyPropertyButton(false); // Desabilita o botão de compra após a transação
-            view.updatePlayerInfo(players); // Atualiza a interface gráfica
-        } else {
-            view.displayMessage(player.getName() + " não tem saldo suficiente para comprar " + shareSpace.getName());
-        }
-    }
     
-
     private void sendPlayerToJail(Player player) {
         prison.sendToJail(player);
         view.displayMessage(player.getName() + " foi enviado para a prisão!");

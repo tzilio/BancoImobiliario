@@ -22,7 +22,7 @@ public class BoardView extends JPanel implements Observer {
         }
         this.board = board;
         this.boardSize = boardSize;
-        this.borderPositions = board.BOARD_SIZE;
+        this.borderPositions = board.getBoardSize();
         this.spaceViews = new HashMap<>();
         this.playerPositions = new HashMap<>();
 

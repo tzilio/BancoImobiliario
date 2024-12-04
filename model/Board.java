@@ -101,6 +101,10 @@ public class Board {
         return instance;
     }
 
+    public int getBoardSize() {
+        return BOARD_SIZE;
+    }
+
     public BoardPosition getSpace(int position) {
         return positions.get(position % BOARD_SIZE);
     }

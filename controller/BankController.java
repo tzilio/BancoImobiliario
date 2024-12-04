@@ -14,7 +14,6 @@ public class BankController {
     public void mortgageProperty(Player player, Property property) {
         Bank bank = Bank.getInstance();
         if (property.getOwner() == player && !bank.isMortgaged(property)) {
-            int mortgageValue = property.getPrice() / 2;
             bank.mortgageProperty(player, property);
             System.out.println(player.getName() + " hipotecou a propriedade " + property.getName());
         } else if (bank.isMortgaged(property)) {

@@ -24,6 +24,7 @@ public class Deck {
     }
 
     private void initializeDeck() {
+        cards.add(new Card("Você roubou três hotdogs, vá para a cadeia!", 0, 30, true)); // Enviar para um estado especial
         cards.add(new Card("Pague uma taxa de 100", -100));
         cards.add(new Card("Avance três espaços", 0, 3, false));
         cards.add(new Card("Volte dois espaços", 0, -2, false));
@@ -32,7 +33,6 @@ public class Deck {
         cards.add(new Card("Você encontrou dinheiro perdido na rua! Ganhe 100.", 100));
         cards.add(new Card("Você comprou um presente caro. Perda de 200.", -200));
         cards.add(new Card("Avance até a propriedade mais próxima e pague aluguel.", 0, 0, true)); // Comportamento especial
-        cards.add(new Card("Vá para a cadeia! Não receba dinheiro ao passar pelo ponto de partida.", 0, 0, true)); // Enviar para um estado especial
         cards.add(new Card("Avance cinco espaços.", 0, 5, false));
         cards.add(new Card("Volte três espaços.", 0, -3, false));
         cards.add(new Card("Você ganhou na loteria! Receba 300.", 300));

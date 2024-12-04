@@ -6,11 +6,9 @@ import model.Bank;
 
 public class PlayerController {
     private Player player;
-    private Bank bank;
 
     public PlayerController(Player player, Bank bank) {
         this.player = player;
-        this.bank = bank;
     }
 
     public void buyProperty(Property property) {
