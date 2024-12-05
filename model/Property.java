@@ -150,8 +150,6 @@ public class Property extends BoardPosition {
             System.out.println("Não há casas ou hotéis para vender em " + getName());
         }
     }
-    
-    
 
     @Override
     public void onLand(Player player) {
