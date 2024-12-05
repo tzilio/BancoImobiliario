@@ -61,6 +61,14 @@ public class Property extends BoardPosition {
         return hasHotel;
     }
 
+    public void setHouses(int houses) {
+        this.houses = houses;
+    }
+    
+    public void setHasHotel(boolean hasHotel) {
+        this.hasHotel = hasHotel;
+    }
+
     public boolean canBuildHouse(Player player, ArrayList<Property> propertiesInCategory) {
         if (hasHotel) {
             System.out.println("Já possui hotel: " + getName());

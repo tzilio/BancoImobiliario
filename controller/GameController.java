@@ -52,9 +52,6 @@ public class GameController {
             view.displayMessage(player.getName() + " está falido e será removido do jogo!");
             System.out.println(player.getName() + " está falido e será removido do jogo!");
     
-            // Transferir propriedades para o credor (ou banco se for o caso)
-            transferProperties(player);
-    
             // Adicionar ao ranking de eliminações
             eliminationRanking.add(player);
     
@@ -90,11 +87,12 @@ private void checkGameEnd() {
 
     // Método para remover um jogador do jogo
     private void removePlayer(Player player) {
-        // Remover do BoardView
-        view.getBoardView().updatePlayerPosition(player, -1); // Remove o token do tabuleiro
-    
+        // Transferir propriedades e ações para o banco.
+        transferProperties(player);
         players.remove(player); // Remove o jogador da lista ativa
         view.removePlayerPanel(player); // Remove o painel do jogador
+        // Remover do BoardView
+        view.getBoardView().updatePlayerPosition(player, -1); // Remove o token do tabuleiro
         eliminationRanking.add(player); // Adiciona ao ranking
     
         view.displayMessage(player.getName() + " foi removido do jogo.");
@@ -103,6 +101,8 @@ private void checkGameEnd() {
         if (!players.isEmpty()) {
             currentPlayerIndex = currentPlayerIndex % players.size();
         }
+
+        currentPlayerIndex--;
     
         // Verificar se restam jogadores
         checkGameEnd();

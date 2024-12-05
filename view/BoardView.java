@@ -122,7 +122,7 @@ public class BoardView extends JPanel implements Observer {
         }
         
 
-        // Jogador faliu = newPosition recebe -1
+        // Jogador faliu ou desistiu = newPosition recebe -1
         if (newPosition < 0) {
             // Remove o token do jogador do tabuleiro
             Integer previousPosition = playerPositions.get(player);

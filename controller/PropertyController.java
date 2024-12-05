@@ -2,10 +2,12 @@ package controller;
 
 import java.util.ArrayList;
 
+import model.Bank;
 import model.Player;
 import model.Property;
 import model.ShareSpace;
 import view.GameView;
+import view.SpaceView;
 
 public class PropertyController {
     private GameView view;
@@ -15,10 +17,28 @@ public class PropertyController {
     }
 
     public void transferProperties(Player player) {
+
+        Bank bank = Bank.getInstance();
         for (Property property : new ArrayList<>(player.getProperties())) {
+
+            property.setHouses(0);
+            property.setHasHotel(false);
+            
+            // Cancelar hipotecas.
+            if (bank.isMortgaged(property)) {
+                bank.liftMortgage(player, property);
+            }
+
+            // Transfere propriedade pro banco.
             player.removeProperty(property);
             property.setOwner(null);
             view.displayMessage(player.getName() + " transferiu " + property.getName() + " para o banco.");
+
+            // Atualizar a interface gráfica do espaço
+            SpaceView spaceView = view.getBoardView().getSpaceView(property.getPosition());
+            if (spaceView != null) {
+                spaceView.updateHouses(0, false); // Remoção de casas e hotéis.
+            }
         }
 
         for (ShareSpace share : new ArrayList<>(player.getShares())) {
