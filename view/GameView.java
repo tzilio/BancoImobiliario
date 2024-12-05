@@ -19,7 +19,6 @@ public class GameView extends JFrame {
     private JLabel diceRollLabel;
     private JButton rollDiceButton;
     private JButton buyPropertyButton;
-    private JButton buildHouseButton;
     private JButton quitButton;
     private BoardView boardView;
     private JPanel playerInfoPanel;
@@ -245,11 +244,9 @@ public class GameView extends JFrame {
 
         rollDiceButton = new JButton("Rolar Dados");
         buyPropertyButton = new JButton("Comprar Propriedade");
-        buildHouseButton = new JButton("Construir Casa");
         passTurnButton = new JButton("Passar Turno");
 
         buyPropertyButton.setEnabled(false);
-        buildHouseButton.setEnabled(false);
         passTurnButton.setEnabled(false);
 
         // Campo e botão para mover manualmente o jogador
@@ -282,8 +279,6 @@ public class GameView extends JFrame {
         buttonPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         buttonPanel.add(buyPropertyButton);
         buttonPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        buttonPanel.add(buildHouseButton);
-        buttonPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         buttonPanel.add(passTurnButton);
 
         buttonPanel.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -297,11 +292,7 @@ public class GameView extends JFrame {
 
         return buttonPanel;
     }
-
-    public JButton getBuildHouseButton() {
-        return buildHouseButton;
-    }
-
+    
     private void openPauseMenu(List<Player> players, Bank bank) {
         pauseMenu.addResumeButtonListener(e -> pauseMenu.hideMenu());
         handleSaveGame(players);
