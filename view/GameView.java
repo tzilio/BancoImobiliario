@@ -49,7 +49,7 @@ public class GameView extends JFrame {
         JPanel headerPanel = new JPanel(new BorderLayout());
 
         messageLabel = new JLabel("Bem-vindo ao Banco Imobiliário!");
-        messageLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        messageLabel.setFont(new Font("Verdana", Font.BOLD, 16));
         messageLabel.setHorizontalAlignment(SwingConstants.CENTER);
         headerPanel.add(messageLabel, BorderLayout.CENTER);
 
@@ -81,8 +81,13 @@ public class GameView extends JFrame {
     private void setupCenter(Board board, List<Player> players) {
         boardView = new BoardView(board, 11, players);
 
+        boardView.setPreferredSize(new Dimension(1200, 1200)); // Tamanho total do tabuleiro
+        boardView.setMinimumSize(new Dimension(1200, 1200));
+        boardView.setMaximumSize(new Dimension(1200, 1200));
+
+
         diceRollLabel = new JLabel("Resultado dos Dados: ");
-        diceRollLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        diceRollLabel.setFont(new Font("Verdana", Font.PLAIN, 14));
         diceRollLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
         // Configuração para exibir os dados
@@ -194,14 +199,20 @@ public class GameView extends JFrame {
         }
         
 
-        JButton togglePlayerInfoButton = new JButton("⮟ Mostrar Jogadores");
+        JButton togglePlayerInfoButton = new JButton(">");
         togglePlayerInfoButton.addActionListener(e -> {
             boolean isVisible = playerInfoPanel.isVisible();
             playerInfoPanel.setVisible(!isVisible);
-            togglePlayerInfoButton.setText(isVisible ? "⮝ Ocultar Jogadores" : "⮟ Mostrar Jogadores");
-            revalidate();
-            repaint();
-        });
+            togglePlayerInfoButton.setText(isVisible ? ">" : "<");
+        
+            // Ajusta o tamanho do tabuleiro
+            Container parent = getParent();
+            if (parent instanceof JFrame) {
+                JFrame frame = (JFrame) parent;
+                frame.revalidate();
+                frame.repaint();
+            }
+        });        
 
         JPanel togglePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         togglePanel.add(togglePlayerInfoButton);
@@ -427,7 +438,7 @@ public class GameView extends JFrame {
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
     
         JLabel titleLabel = new JLabel("Ranking Final");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        titleLabel.setFont(new Font("Verdana", Font.BOLD, 20));
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         panel.add(titleLabel);
         panel.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -436,7 +447,7 @@ public class GameView extends JFrame {
         for (Player player : ranking) {
             JLabel playerLabel = new JLabel(position + "º: " + player.getName() +
                     (player.getBalance() <= 0 ? "(Eliminado)" : " (Vencedor)"));
-            playerLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+            playerLabel.setFont(new Font("Verdana", Font.PLAIN, 16));
             playerLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             panel.add(playerLabel);
             position++;

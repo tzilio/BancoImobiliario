@@ -47,6 +47,10 @@ public class BoardView extends JPanel implements Observer {
     private void addSpacesToGrid(GridBagConstraints gbc) {
         int position = 0;
 
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH; // Força o preenchimento
+
         // Ajustando os tamanhos e mantendo a lógica de percorrer o perímetro
         for (int i = 0; i < boardSize; i++) {
             gbc.gridx = i;
@@ -81,14 +85,20 @@ public class BoardView extends JPanel implements Observer {
 
         // Configurar tamanhos dinâmicos com base na posição
         if (isCornerPosition(position)) {
-            spaceView.setPreferredSize(new Dimension(150, 150)); // Quadrados nos cantos
+            spaceView.setPreferredSize(new Dimension(200, 200)); // Aumentar tamanho dos cantos
+            spaceView.setMinimumSize(new Dimension(200, 200));
+            spaceView.setMaximumSize(new Dimension(200, 200));
         } else if (isVerticalPosition(position)) {
-            spaceView.setPreferredSize(new Dimension(100, 150)); // Verticais
+            spaceView.setPreferredSize(new Dimension(150, 200)); // Ajustar tamanho vertical
+            spaceView.setMinimumSize(new Dimension(150, 200));
+            spaceView.setMaximumSize(new Dimension(150, 200));
         } else {
-            spaceView.setPreferredSize(new Dimension(150, 100)); // Horizontais
+            spaceView.setPreferredSize(new Dimension(200, 150)); // Ajustar tamanho horizontal
+            spaceView.setMinimumSize(new Dimension(200, 150));
+            spaceView.setMaximumSize(new Dimension(200, 150));
         }
 
-        spaceView.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
+        spaceView.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2, true));
         add(spaceView, gbc);
     }
 
@@ -179,10 +189,10 @@ public class BoardView extends JPanel implements Observer {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
-        Color startColor = new Color(50, 150, 200);
-        Color endColor = new Color(200, 230, 250);
+        Color startColor = new Color(240, 248, 255); // Azul gelo
+        Color endColor = new Color(173, 216, 230); // Azul claro
         GradientPaint gradient = new GradientPaint(0, 0, startColor, getWidth(), getHeight(), endColor);
         g2d.setPaint(gradient);
         g2d.fillRect(0, 0, getWidth(), getHeight());
-    }
+    }    
 }

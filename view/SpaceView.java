@@ -9,13 +9,11 @@ import model.Property;
 
 public class SpaceView extends JPanel {
     private BoardPosition boardPosition;
-    private int position;
     private JPanel playerTokensPanel;
     private JPanel housePanel; // Painel para casas
 
     public SpaceView(BoardPosition boardPosition, int position) {
         this.boardPosition = boardPosition;
-        this.position = position;
 
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -46,19 +44,20 @@ public class SpaceView extends JPanel {
         if (boardPosition instanceof Property) {
             Property property = (Property) boardPosition;
             switch (property.getCategory()) {
-                case "Roxo": return new Color(150, 75, 0); // Marrom
-                case "Ciano": return Color.CYAN;
-                case "Rosa": return Color.PINK;
-                case "Laranja": return Color.ORANGE;
-                case "Vermelho": return Color.RED;
-                case "Amarelo": return Color.YELLOW;
-                case "Verde": return Color.GREEN;
-                case "Azul": return new Color(0, 0, 128); // Azul escuro
-                default: return Color.LIGHT_GRAY; // Cor padrão para categorias desconhecidas
+                case "Roxo": return new Color(181, 92, 170); // Roxo vibrante
+                case "Ciano": return new Color(38, 154, 154); // Ciano brilhante
+                case "Rosa": return new Color(231, 111, 179); // Rosa forte
+                case "Laranja": return new Color(226, 87, 41); // Laranja vivo
+                case "Vermelho": return new Color(216, 56, 54); // Vermelho forte
+                case "Amarelo": return new Color(242, 190, 34); // Amarelo brilhante
+                case "Verde": return new Color(40, 124, 50); // Verde vibrante
+                case "Azul": return new Color(0, 0, 255); // Azul forte
+                default: return Color.LIGHT_GRAY; // Cinza para categorias desconhecidas
             }
         }
-        return Color.LIGHT_GRAY; // Se não for Property
+        return Color.LIGHT_GRAY; // Cinza para espaços genéricos
     }
+    
 
     public void clearPlayerTokens() {
         playerTokensPanel.removeAll();
