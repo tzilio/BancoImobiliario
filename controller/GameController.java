@@ -175,6 +175,7 @@ private void checkGameEnd() {
 
     private void initializePlayers() {
         for (Player player : players) {
+            player.setPosition(0);
             view.getBoardView().updatePlayerPosition(player, player.getPosition());
         }
     }
