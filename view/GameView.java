@@ -61,123 +61,170 @@ public class GameView extends JFrame {
 
     private void setupMainLayout(Board board, List<Player> players) {
         JPanel mainPanel = new JPanel(new BorderLayout());
-
+    
+        // Painel de informações dos jogadores
         setupPlayerInfoPanel(players);
-        mainPanel.add(playerInfoContainer, BorderLayout.WEST);
-
+        JPanel playerInfoWithSpacing = new JPanel(new BorderLayout());
+        playerInfoWithSpacing.add(Box.createRigidArea(new Dimension(20, 0)), BorderLayout.EAST); // Espaçamento
+        playerInfoWithSpacing.add(playerInfoContainer, BorderLayout.CENTER);
+        mainPanel.add(playerInfoWithSpacing, BorderLayout.WEST);
+    
+        // Tabuleiro central
         setupCenter(board, players);
-        mainPanel.add(boardView, BorderLayout.CENTER);
-
+        JPanel boardWithSpacing = new JPanel(new BorderLayout());
+        boardWithSpacing.add(Box.createRigidArea(new Dimension(0, 20)), BorderLayout.NORTH); // Espaçamento acima
+        boardWithSpacing.add(boardView, BorderLayout.CENTER);
+        boardWithSpacing.add(Box.createRigidArea(new Dimension(0, 20)), BorderLayout.SOUTH); // Espaçamento abaixo
+        mainPanel.add(boardWithSpacing, BorderLayout.CENTER);
+    
+        // Painel de botões
         JPanel buttonPanel = setupButtonPanel();
-        mainPanel.add(buttonPanel, BorderLayout.EAST);
-
+        JPanel buttonsWithSpacing = new JPanel(new BorderLayout());
+        buttonsWithSpacing.add(Box.createRigidArea(new Dimension(20, 0)), BorderLayout.WEST); // Espaçamento
+        buttonsWithSpacing.add(buttonPanel, BorderLayout.CENTER);
+        mainPanel.add(buttonsWithSpacing, BorderLayout.EAST);
+    
         // Adicionar o painel dos dados abaixo do tabuleiro
         JPanel dicePanel = setupDicePanel();
         mainPanel.add(dicePanel, BorderLayout.SOUTH);
 
         add(mainPanel, BorderLayout.CENTER);
     }
+    
 
     private void setupCenter(Board board, List<Player> players) {
         boardView = new BoardView(board, 11, players);
-
+    
         boardView.setPreferredSize(new Dimension(1200, 1200)); // Tamanho total do tabuleiro
         boardView.setMinimumSize(new Dimension(1200, 1200));
         boardView.setMaximumSize(new Dimension(1200, 1200));
-
-
+    
         diceRollLabel = new JLabel("Resultado dos Dados: ");
-        diceRollLabel.setFont(new Font("Verdana", Font.PLAIN, 14));
+        diceRollLabel.setFont(new Font("Verdana", Font.PLAIN, 16));
         diceRollLabel.setHorizontalAlignment(SwingConstants.CENTER);
-
+    
         // Configuração para exibir os dados
         JPanel dicePanel = new JPanel();
-        dicePanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-
-        JLabel diceOneLabel = new JLabel(new ImageIcon("resources/dices/dice1.png"));
-        JLabel diceTwoLabel = new JLabel(new ImageIcon("resources/dices/dice1.png"));
+        dicePanel.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 20)); // Espaçamento entre os componentes
+    
+        // Ajuste do tamanho das imagens dos dados
+        int diceImageSize = 100; // Tamanho das imagens dos dados
+        JLabel diceOneLabel = new JLabel(new ImageIcon(
+                new ImageIcon("resources/dices/dice1.png").getImage().getScaledInstance(diceImageSize, diceImageSize, Image.SCALE_SMOOTH)));
+        JLabel diceTwoLabel = new JLabel(new ImageIcon(
+                new ImageIcon("resources/dices/dice1.png").getImage().getScaledInstance(diceImageSize, diceImageSize, Image.SCALE_SMOOTH)));
+    
+        // Botão de Rolar Dados
         JButton rollDiceButton = new JButton("Rolar Dados");
-
+        rollDiceButton.setFont(new Font("Verdana", Font.BOLD, 16));
+        rollDiceButton.setPreferredSize(new Dimension(150, 50)); // Ajuste do tamanho do botão
+    
         dicePanel.add(diceOneLabel);
         dicePanel.add(diceTwoLabel);
         dicePanel.add(rollDiceButton);
-
+    
         // Ação do botão
         rollDiceButton.addActionListener(e -> {
             Dice dice = Dice.getInstance();
             dice.roll();
-
+    
             int dice1 = dice.getDice1();
             int dice2 = dice.getDice2();
-
-            diceOneLabel.setIcon(new ImageIcon("resources/dices/dice" + dice1 + ".png"));
-            diceTwoLabel.setIcon(new ImageIcon("resources/dices/dice" + dice2 + ".png"));
-
+    
+            diceOneLabel.setIcon(new ImageIcon(
+                    new ImageIcon("resources/dices/dice" + dice1 + ".png").getImage().getScaledInstance(diceImageSize, diceImageSize, Image.SCALE_SMOOTH)));
+            diceTwoLabel.setIcon(new ImageIcon(
+                    new ImageIcon("resources/dices/dice" + dice2 + ".png").getImage().getScaledInstance(diceImageSize, diceImageSize, Image.SCALE_SMOOTH)));
+    
             diceRollLabel.setText("Resultado dos Dados: " + dice1 + " e " + dice2);
         });
-
+    
+        // Painel centralizado para o tabuleiro e o painel dos dados
         JPanel centerPanel = new JPanel(new BorderLayout());
         centerPanel.add(diceRollLabel, BorderLayout.NORTH);
         centerPanel.add(boardView, BorderLayout.CENTER);
-        centerPanel.add(dicePanel, BorderLayout.SOUTH);
-
+    
+        // Painel para centralizar os dados e o botão em um GridLayout
+        JPanel diceAndButtonPanel = new JPanel(new BorderLayout());
+        JPanel diceContainer = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0)); // Dados centralizados
+        diceContainer.add(diceOneLabel);
+        diceContainer.add(diceTwoLabel);
+        diceAndButtonPanel.add(diceContainer, BorderLayout.CENTER);
+        diceAndButtonPanel.add(rollDiceButton, BorderLayout.EAST); // Botão ao lado
+    
+        centerPanel.add(diceAndButtonPanel, BorderLayout.SOUTH);
+    
         add(centerPanel, BorderLayout.CENTER);
     }
-
+    
     private JPanel setupDicePanel() {
         JPanel dicePanel = new JPanel();
         dicePanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-
+    
         JLabel diceOneLabel = new JLabel(new ImageIcon(
                 new ImageIcon("resources/dices/dice1.png").getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
         JLabel diceTwoLabel = new JLabel(new ImageIcon(
                 new ImageIcon("resources/dices/dice1.png").getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
+    
+        Dimension buttonSize = new Dimension(200, 50); // Largura e altura dos botões
+    
+        // Botão de Rolar Dados
+        rollDiceButton = new JButton("Rolar Dados");
+        rollDiceButton.setFont(new Font("Verdana", Font.BOLD, 14));
+        rollDiceButton.setBackground(new Color(70, 130, 180)); // Azul
+        rollDiceButton.setForeground(Color.WHITE);
+        rollDiceButton.setFocusPainted(false);
+        rollDiceButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        rollDiceButton.setPreferredSize(buttonSize);
+        rollDiceButton.setMinimumSize(buttonSize);
+        rollDiceButton.setMaximumSize(buttonSize);
 
         dicePanel.add(diceOneLabel);
         dicePanel.add(diceTwoLabel);
-
+        dicePanel.add(rollDiceButton);
+    
         rollDiceButton.addActionListener(e -> {
-            rollDiceButton.setEnabled(false);
+            rollDiceButton.setEnabled(false); // Desabilitar o botão
             Dice dice = Dice.getInstance();
-
+        
             new Thread(() -> {
                 long startTime = System.currentTimeMillis();
                 while ((System.currentTimeMillis() - startTime) < 1000) {
                     Random rand = new Random();
-                    int animDice1 = rand.nextInt(5)+1;
-                    int animDice2 = rand.nextInt(5)+1;
-
+                    int animDice1 = rand.nextInt(6) + 1;
+                    int animDice2 = rand.nextInt(6) + 1;
+        
                     SwingUtilities.invokeLater(() -> {
                         diceOneLabel.setIcon(new ImageIcon(new ImageIcon("resources/dices/dice" + animDice1 + ".png")
                                 .getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
                         diceTwoLabel.setIcon(new ImageIcon(new ImageIcon("resources/dices/dice" + animDice2 + ".png")
                                 .getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
                     });
-
+        
                     try {
-                        Thread.sleep(60); // Intervalo entre animações
+                        Thread.sleep(60);
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
                     }
                 }
-
+        
                 SwingUtilities.invokeLater(() -> {
                     int dice1 = dice.getDice1();
                     int dice2 = dice.getDice2();
-
+        
                     diceOneLabel.setIcon(new ImageIcon(new ImageIcon("resources/dices/dice" + dice1 + ".png").getImage()
                             .getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
                     diceTwoLabel.setIcon(new ImageIcon(new ImageIcon("resources/dices/dice" + dice2 + ".png").getImage()
                             .getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
-
+        
                     diceRollLabel.setText("Resultado dos Dados: " + dice1 + " e " + dice2);
-                    rollDiceButton.setEnabled(true);
                 });
             }).start();
         });
-
+    
         return dicePanel;
     }
+    
 
     public void displayNewsPopup(String message) {
         JOptionPane.showMessageDialog(
@@ -188,51 +235,31 @@ public class GameView extends JFrame {
     }
 
     private void setupPlayerInfoPanel(List<Player> players) {
+        // Inicializa o painel de informações dos jogadores
         playerInfoPanel = new JPanel();
         playerInfoPanel.setLayout(new BoxLayout(playerInfoPanel, BoxLayout.Y_AXIS));
         playerInfoPanel.setPreferredSize(new Dimension(300, getHeight()));
-
+        playerInfoPanel.setBorder(BorderFactory.createTitledBorder("Informações dos Jogadores"));
+    
+        // Adiciona a exibição de informações de cada jogador
         for (Player player : players) {
             PlayerInfoView playerInfoView = new PlayerInfoView(player);
             playerInfoViews.put(player, playerInfoView);
             playerInfoPanel.add(playerInfoView);
+            playerInfoPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         }
-        
 
-        JButton togglePlayerInfoButton = new JButton(">");
-        togglePlayerInfoButton.addActionListener(e -> {
-            boolean isVisible = playerInfoPanel.isVisible();
-            playerInfoPanel.setVisible(!isVisible);
-            togglePlayerInfoButton.setText(isVisible ? ">" : "<");
-        
-            // Ajusta o tamanho do tabuleiro
-            Container parent = getParent();
-            if (parent instanceof JFrame) {
-                JFrame frame = (JFrame) parent;
-                frame.revalidate();
-                frame.repaint();
-            }
-        });        
-
-        JPanel togglePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        togglePanel.add(togglePlayerInfoButton);
-
+    
+        // Contêiner para o painel lateral
         playerInfoContainer = new JPanel(new BorderLayout());
         playerInfoContainer.setPreferredSize(new Dimension(300, getHeight()));
-        playerInfoContainer.add(togglePanel, BorderLayout.NORTH);
-        playerInfoContainer.add(playerInfoPanel, BorderLayout.CENTER);
+        playerInfoContainer.add(new JScrollPane(playerInfoPanel), BorderLayout.CENTER);
     }
-
+    
     private transient java.util.List<java.util.function.Consumer<Integer>> movePlayerListeners = new ArrayList<>();
 
     public void addMovePlayerListener(java.util.function.Consumer<Integer> listener) {
         movePlayerListeners.add(listener);
-    }
-
-    private void fireMovePlayerEvent(int steps) {
-        for (var listener : movePlayerListeners) {
-            listener.accept(steps);
-        }
     }
 
     private transient java.util.List<java.util.function.Consumer<Void>> quitPlayerListeners = new ArrayList<>();
@@ -251,58 +278,66 @@ public class GameView extends JFrame {
     private JPanel setupButtonPanel() {
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
-        buttonPanel.setPreferredSize(new Dimension(200, getHeight()));
-
-        rollDiceButton = new JButton("Rolar Dados");
-        buyPropertyButton = new JButton("Comprar Propriedade");
-        passTurnButton = new JButton("Passar Turno");
-
-        buyPropertyButton.setEnabled(false);
-        passTurnButton.setEnabled(false);
-
-        // Campo e botão para mover manualmente o jogador
-        JTextField moveField = new JTextField();
-        JButton moveButton = new JButton("Mover");
-
-        //Botão de desistência(jogador atual desiste).
-        quitButton = new JButton("Desistir");
-        quitButton.setEnabled(true);
-        quitButton.addActionListener(e -> fireQuitPlayerEvent());
-
-        moveField.setMaximumSize(new Dimension(200, 30)); // Define o tamanho do campo de texto
-        moveButton.setEnabled(true);
-
-        moveButton.addActionListener(e -> {
-            try {
-                int steps = Integer.parseInt(moveField.getText());
-                if (steps < 0) {
-                    displayMessage("O número de passos não pode ser negativo.");
-                    return;
-                }
-                fireMovePlayerEvent(steps); // Método para mover o jogador
-            } catch (NumberFormatException ex) {
-                displayMessage("Digite um número válido.");
-            }
-        });
-
-        buttonPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        buttonPanel.add(rollDiceButton);
-        buttonPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        buttonPanel.add(buyPropertyButton);
-        buttonPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        buttonPanel.add(passTurnButton);
-
-        buttonPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        buttonPanel.add(new JLabel("Mover Jogador (debug):"));
-        buttonPanel.add(moveField);
-        buttonPanel.add(Box.createRigidArea(new Dimension(0, 5)));
-        buttonPanel.add(moveButton);
-        buttonPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        buttonPanel.add(quitButton);
+        buttonPanel.setPreferredSize(new Dimension(250, getHeight()));
     
-
+        Dimension buttonSize = new Dimension(200, 50); // Largura e altura dos botões
+    
+        // Botão de Comprar Propriedade
+        buyPropertyButton = new JButton("Comprar Propriedade");
+        buyPropertyButton.setFont(new Font("Verdana", Font.BOLD, 14));
+        buyPropertyButton.setBackground(new Color(46, 139, 87)); // Verde
+        buyPropertyButton.setForeground(Color.WHITE);
+        buyPropertyButton.setFocusPainted(false);
+        buyPropertyButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        buyPropertyButton.setPreferredSize(buttonSize);
+        buyPropertyButton.setMinimumSize(buttonSize);
+        buyPropertyButton.setMaximumSize(buttonSize);
+        buyPropertyButton.setEnabled(false);
+    
+        // Botão de Passar Turno
+        passTurnButton = new JButton("Passar Turno");
+        passTurnButton.setFont(new Font("Verdana", Font.BOLD, 14));
+        passTurnButton.setBackground(new Color(255, 165, 0)); // Laranja
+        passTurnButton.setForeground(Color.WHITE);
+        passTurnButton.setFocusPainted(false);
+        passTurnButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        passTurnButton.setPreferredSize(buttonSize);
+        passTurnButton.setMinimumSize(buttonSize);
+        passTurnButton.setMaximumSize(buttonSize);
+        passTurnButton.setEnabled(false);
+    
+        // Botão de Desistência
+        quitButton = new JButton("Desistir");
+        quitButton.setFont(new Font("Verdana", Font.BOLD, 14));
+        quitButton.setBackground(new Color(178, 34, 34)); // Vermelho escuro
+        quitButton.setForeground(Color.WHITE);
+        quitButton.setFocusPainted(false);
+        quitButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        quitButton.setPreferredSize(buttonSize);
+        quitButton.setMinimumSize(buttonSize);
+        quitButton.setMaximumSize(buttonSize);
+        quitButton.addActionListener(e -> fireQuitPlayerEvent());
+    
+        // Centraliza e espaça os botões
+        buttonPanel.add(Box.createRigidArea(new Dimension(0, 15))); // Espaçamento entre botões
+        buttonPanel.add(centerButton(buyPropertyButton));
+        buttonPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        buttonPanel.add(centerButton(passTurnButton));
+        buttonPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        buttonPanel.add(centerButton(quitButton));
+    
         return buttonPanel;
     }
+    
+    // Método auxiliar para centralizar botões
+    private JPanel centerButton(JButton button) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+        panel.add(Box.createHorizontalGlue());
+        panel.add(button);
+        panel.add(Box.createHorizontalGlue());
+        return panel;
+    }    
     
     private void openPauseMenu(List<Player> players, Bank bank) {
         pauseMenu.addResumeButtonListener(e -> pauseMenu.hideMenu());
@@ -470,7 +505,5 @@ public class GameView extends JFrame {
         winnerFrame.add(panel);
         winnerFrame.setLocationRelativeTo(null); // Centraliza a janela
         winnerFrame.setVisible(true);
-    }
-    
-    
+    }    
 }

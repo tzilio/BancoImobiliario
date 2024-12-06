@@ -19,6 +19,7 @@ public class GameController {
     private GameView view;
     private Prison prison;
     private boolean awaitingTurnEnd;
+    private boolean isMoving;
     
     public GameController(List<Player> players, GameView view) {
         this.players = players;
@@ -28,6 +29,7 @@ public class GameController {
         this.currentPlayerIndex = 0;
         this.prison = Prison.getInstance(board.getJailPosition());
         this.awaitingTurnEnd = false; // Inicializa o estado do turno
+        this.isMoving = false;
         initializePlayers();
         setupRollDiceAction();
         setupBuyPropertyAction();
@@ -259,13 +261,18 @@ private void checkGameEnd() {
 
     private void setupPassTurnAction() {
         view.getPassTurnButton().addActionListener(e -> {
+            if (isMoving) {
+                view.displayMessage("Espere o jogador concluir o movimento antes de passar o turno!");
+                return; // Bloqueia a ação
+            }
             if (awaitingTurnEnd) {
-                endTurn();
+                endTurn(); // Finaliza o turno se o movimento terminou
             } else {
                 view.displayMessage("Você precisa rolar os dados antes de passar o turno!");
             }
         });
     }
+    
 
     private void nextTurn() {
         view.enableBuyPropertyButton(false);
@@ -312,17 +319,20 @@ private void checkGameEnd() {
     
 
     public void movePlayer(Player player, int steps) {
+        isMoving = true; // Movimento iniciado
+        SwingUtilities.invokeLater(() -> view.getPassTurnButton().setEnabled(false)); // Desativa o botão
+    
         new Thread(() -> {
             for (int i = 0; i < steps; i++) {
                 try {
-                    Thread.sleep(500); // Pausa de 500ms entre cada movimento
+                    Thread.sleep(500); // Pausa entre os movimentos
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     return;
                 }
                 SwingUtilities.invokeLater(() -> {
                     if (!players.contains(player)) {
-                        return; // Interrompe a movimentação se o jogador foi removido
+                        return; // Interrompe a movimentação se o jogador for removido
                     }
                     player.setPosition((player.getPosition() + 1) % Board.BOARD_SIZE);
                     view.getBoardView().updatePlayerPosition(player, player.getPosition());
@@ -330,14 +340,21 @@ private void checkGameEnd() {
             }
             SwingUtilities.invokeLater(() -> {
                 if (!players.contains(player)) {
-                    return; // Interrompe a movimentação se o jogador foi removido
+                    return; // Interrompe caso o jogador tenha sido removido
                 }
+                // Aplicar os efeitos da nova posição
                 BoardPosition currentSpace = board.getSpace(player.getPosition());
                 applySpaceEffect(player, currentSpace);
                 view.displayMessage(player.getName() + " chegou à posição " + player.getPosition());
+    
+                // Finaliza o movimento
+                isMoving = false;
+                view.getPassTurnButton().setEnabled(true); // Reativa o botão
             });
         }).start();
     }
+    
+    
 
 
     private boolean isPlayerSentToJail(Player player) {
