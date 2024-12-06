@@ -168,7 +168,7 @@ public class MenuView extends JFrame {
             GameView gameView = new GameView(board, players, null);
             gameView.setVisible(true);
 
-            GameController gameController = new GameController(players, gameView);
+            GameController gameController = new GameController(players, gameView, false);
             gameController.startGame();
         });
 
@@ -247,7 +247,7 @@ public class MenuView extends JFrame {
                 gameView.updatePlayerInfo(loadedPlayers);
     
                 // Cria o controlador do jogo e inicia o jogo
-                GameController gameController = new GameController(loadedPlayers, gameView);
+                GameController gameController = new GameController(loadedPlayers, gameView, true);
                 gameController.startGame();
             });
     

@@ -21,7 +21,7 @@ public class GameController {
     private boolean awaitingTurnEnd;
     private boolean isMoving;
     
-    public GameController(List<Player> players, GameView view) {
+    public GameController(List<Player> players, GameView view, boolean isLoad) {
         this.players = players;
         this.board = Board.getInstance();
         this.dice = Dice.getInstance();
@@ -30,7 +30,7 @@ public class GameController {
         this.prison = Prison.getInstance(board.getJailPosition());
         this.awaitingTurnEnd = false; // Inicializa o estado do turno
         this.isMoving = false;
-        initializePlayers();
+        initializePlayers(isLoad);
         setupRollDiceAction();
         setupBuyPropertyAction();
         setupPassTurnAction();
@@ -175,9 +175,9 @@ private void checkGameEnd() {
         displayCurrentPlayerTurn();
     }
 
-    private void initializePlayers() {
+    private void initializePlayers(boolean isLoad) {
         for (Player player : players) {
-            player.setPosition(0);
+            if (!isLoad) player.setPosition(0);
             view.getBoardView().updatePlayerPosition(player, player.getPosition());
         }
     }
