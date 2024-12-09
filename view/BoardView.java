@@ -27,7 +27,7 @@ public class BoardView extends JPanel implements Observer {
         this.playerPositions = new HashMap<>();
 
         setLayout(new GridBagLayout());
-        setBackground(new Color(50, 150, 200)); // Fundo azul clássico
+        setBackground(new Color(0, 0, 0)); // Fundo azul clássico
         setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -189,10 +189,20 @@ public class BoardView extends JPanel implements Observer {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
-        Color startColor = new Color(240, 248, 255); // Azul gelo
-        Color endColor = new Color(173, 216, 230); // Azul claro
-        GradientPaint gradient = new GradientPaint(0, 0, startColor, getWidth(), getHeight(), endColor);
-        g2d.setPaint(gradient);
-        g2d.fillRect(0, 0, getWidth(), getHeight());
-    }    
+
+        ImageIcon backgroundIcon = new ImageIcon("resources/bartiii.jpg"); 
+        Image backgroundImage = backgroundIcon.getImage();
+
+        int panelWidth = getWidth();
+        int panelHeight = getHeight();
+        int imageWidth = backgroundImage.getWidth(this);
+        int imageHeight = backgroundImage.getHeight(this);
+
+        int x = (panelWidth - imageWidth) / 2;
+        int y = (panelHeight - imageHeight) / 2;
+
+        g2d.drawImage(backgroundImage, x, y, this);
+    }
+
+   
 }
