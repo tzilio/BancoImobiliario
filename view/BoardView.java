@@ -27,7 +27,7 @@ public class BoardView extends JPanel implements Observer {
         this.playerPositions = new HashMap<>();
 
         setLayout(new GridBagLayout());
-        setBackground(new Color(0, 0, 0)); // Fundo azul clássico
+        setBackground(new Color(255, 255, 255));
         setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -190,7 +190,7 @@ public class BoardView extends JPanel implements Observer {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 
-        ImageIcon backgroundIcon = new ImageIcon("resources/bartiii.jpg"); 
+        ImageIcon backgroundIcon = new ImageIcon("resources/background_board.png"); 
         Image backgroundImage = backgroundIcon.getImage();
 
         int panelWidth = getWidth();
