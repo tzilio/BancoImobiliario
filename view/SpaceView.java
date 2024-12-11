@@ -6,6 +6,7 @@ import java.io.File;
 import model.BoardPosition;
 import model.Player;
 import model.Property;
+import model.ShareSpace;
 
 public class SpaceView extends JPanel {
     private BoardPosition boardPosition;
@@ -34,10 +35,25 @@ public class SpaceView extends JPanel {
     private void configureSpaceView() {
         setBackground(getSpaceColor());
 
-        JLabel nameLabel = new JLabel("<html><center>" + boardPosition.getName() + "</center></html>");
-        nameLabel.setFont(new Font("Arial", Font.BOLD, 10));
-        nameLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        add(nameLabel, BorderLayout.NORTH);
+        if (boardPosition instanceof Property) {
+            Property p = (Property) boardPosition;
+            JLabel nameLabel = new JLabel("<html><center>" + boardPosition.getName() + "-> R$" + p.getPrice() + "</center></html>");
+            nameLabel.setFont(new Font("Arial", Font.BOLD, 10));
+            nameLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            add(nameLabel, BorderLayout.NORTH);
+        } else if (boardPosition instanceof ShareSpace) {
+            ShareSpace p = (ShareSpace) boardPosition;
+            JLabel nameLabel = new JLabel("<html><center>" + boardPosition.getName() + "-> R$" + p.getPrice() + "</center></html>");
+            nameLabel.setFont(new Font("Arial", Font.BOLD, 10));
+            nameLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            add(nameLabel, BorderLayout.NORTH);
+        } else {
+            JLabel nameLabel = new JLabel("<html><center>" + boardPosition.getName() + "</center></html>");
+            nameLabel.setFont(new Font("Arial", Font.BOLD, 10));
+            nameLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            add(nameLabel, BorderLayout.NORTH);
+        }
+
     }
 
     private Color getSpaceColor() {
