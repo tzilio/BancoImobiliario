@@ -37,13 +37,13 @@ public class SpaceView extends JPanel {
 
         if (boardPosition instanceof Property) {
             Property p = (Property) boardPosition;
-            JLabel nameLabel = new JLabel("<html><center>" + boardPosition.getName() + "-> R$" + p.getPrice() + "</center></html>");
+            JLabel nameLabel = new JLabel("<html><center>" + boardPosition.getName() + " -> Preço: R$" + p.getPrice() + " -> Aluguel: R$" + p.getRent() + "</center></html>");
             nameLabel.setFont(new Font("Arial", Font.BOLD, 10));
             nameLabel.setHorizontalAlignment(SwingConstants.CENTER);
             add(nameLabel, BorderLayout.NORTH);
         } else if (boardPosition instanceof ShareSpace) {
             ShareSpace p = (ShareSpace) boardPosition;
-            JLabel nameLabel = new JLabel("<html><center>" + boardPosition.getName() + "-> R$" + p.getPrice() + "</center></html>");
+            JLabel nameLabel = new JLabel("<html><center>" + boardPosition.getName() + " -> Preço: R$" + p.getPrice() + " -> Multiplicador: R$" + p.getMultiplier() + "</center></html>");
             nameLabel.setFont(new Font("Arial", Font.BOLD, 10));
             nameLabel.setHorizontalAlignment(SwingConstants.CENTER);
             add(nameLabel, BorderLayout.NORTH);
