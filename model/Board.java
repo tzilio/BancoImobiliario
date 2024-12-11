@@ -27,12 +27,12 @@ public class Board {
 
     // Dados para ShareSpaces
     private static final String[] SHARE_NAMES = {
-        "Empreendimentos Tensos",
-        "Corretora Vai e Vem",
-        "Fundos Quebradinhos",
-        "Investimentos Nervosos",
-        "Bolsa de Troco",
-        "Urubus do PIX"
+        "Curso Online",
+        "Marketing Digital",
+        "Tigrinho",
+        "Esportes da Sorte",
+        "Blaze",
+        "Urubu do PIX"
     };
     private static final double[] SHARE_MULTIPLIERS = {15, 20, 12, 18, 16, 15};
     private static final int[] SHARE_PRICES = {250, 300, 350, 400, 450, 200};
